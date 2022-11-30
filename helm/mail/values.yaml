@@ -91,6 +91,10 @@ extraContainers: []
 #     volumeMounts:
 #       - mountPath: /var/spool/postfix
 #         name: mail
+#       - mountPath: /var/spool/postfix/private
+#         name: private
+#       - mountPath: /var/spool/postfix/public
+#         name: public
 #       - mountPath: /var/log/
 #         name: logs
 #     readinessProbe:
