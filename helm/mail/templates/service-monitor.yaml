@@ -3,24 +3,24 @@
 {{- $fullName := include (print $chart ".fullname") . -}}
 {{- $labels := include (print $chart ".labels") . -}}
 {{- $selectorLabels := include (print $chart ".selectorLabels") . -}}
-apiVersion: v1
-kind: Service
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
 metadata:
   name: mail-metrics
   labels:
     {{- $labels | nindent 4 }}
     {{- with .Values.service.labels }}{{ toYaml . | nindent 4 }}{{ end }}
-    prometheus: unknown
   annotations:
     {{- with .Values.service.annotations }}{{ toYaml . | nindent 4 }}{{ end }}
 spec:
-  type: ClusterIP
-  {{- with .Values.service.spec }}{{ toYaml . | nindent 2 }}{{ end }}
-  ports:
-    - port: {{ .Values.metrics.port }}
-      targetPort: metrics
-      protocol: TCP
-      name: metrics
+  endpoints:
+  - interval: 15s
+    port: metrics
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace | quote }}
   selector:
-    {{- $selectorLabels | nindent 4 }}
+    matchLabels:
+      app.kubernetes.io/instance: {{ $chart }}
+      prometheus: unknown
 {{- end -}}
