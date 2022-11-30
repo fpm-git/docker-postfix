@@ -64,6 +64,51 @@ extraVolumeMounts: []
 extraInitContainers: []
 extraEnv: []
 extraContainers: []
+#Enable to following blocks for metrics
+
+# extraVolumeMounts: 
+# - name: logs
+#   mountPath: /var/log/
+#   readOnly: false
+
+# extraVolumes:
+#   - name: logs
+#     emptyDir: {}
+
+# extraContainers: |
+#   - name: exporter
+#     imagePullPolicy: Always
+#     image: <REPO>/postfix_exporter:v1.0.0
+#     ports:
+#     - containerPort: 9154
+#       name: metrics
+#       protocol: TCP
+#     args:
+#     - sleep 15s; /bin/postfix_exporter
+#     command:
+#     - sh
+#     - -c
+#     volumeMounts:
+#       - mountPath: /var/spool/postfix
+#         name: mail
+#       - mountPath: /var/log/
+#         name: logs
+#     readinessProbe:
+#       httpGet:
+#         path: /metrics
+#         port: 9154
+#       initialDelaySeconds: 5
+#   - name: postfix-logs
+#     imagePullPolicy: Always
+#     image: alpine:latest
+#     args:
+#     - sleep 15s; tail /var/log/mail.log -f | grep -v "connect from localhost\[127\.0\.0\.1\]\|lost connection after EHLO from localhost\[127\.0\.0\.1\]"
+#     command:
+#     - sh
+#     - -c
+#     volumeMounts:
+#       - mountPath: /var/log/
+#         name: logs
 
 deployment:
   labels: {}
@@ -130,6 +175,7 @@ config:
   postfix: {}
     # e.g.
     # myhostname: "postfix"
+    # maillog_file: /var/log/mail.log # Enable this for metrics
     # smtp_tls_security_level: "encrypt"
   opendkim: {}
     # e.g.
