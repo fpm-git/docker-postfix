@@ -21,7 +21,7 @@ service:
   annotations: {}
   # nodePort:
 
-metrics: 
+metrics:
   enabled: false
   port: 9154
 

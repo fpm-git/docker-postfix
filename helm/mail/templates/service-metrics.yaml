@@ -6,7 +6,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $fullName | quote }}-metrics
+  name: mail-metrics
   labels:
     {{- $labels | nindent 4 }}
     {{- with .Values.service.labels }}{{ toYaml . | nindent 4 }}{{ end }}
