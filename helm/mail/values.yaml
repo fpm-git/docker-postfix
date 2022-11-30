@@ -21,6 +21,10 @@ service:
   annotations: {}
   # nodePort:
 
+metrics: 
+  enabled: false
+  port: 9154
+
 # Tell helm to restart (recreate) pods on every deploy. Setting this to true will inject
 # `date/deploy-date: <timestamp>` annotation into pod specification for StateFulset. This
 # ensures that the Pod is recreated with the new changes.
