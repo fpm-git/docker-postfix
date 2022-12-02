@@ -97,7 +97,7 @@ spec:
             - mountPath: /var/spool/postfix
               name: {{ $fullName }}
               subPath: spool
-              {{ - if .Values.metrics.enabled }}
+              {{- if .Values.metrics.enabled }}
             - name: {{ $fullName }}
               mountPath: /var/log/
               readOnly: false
