@@ -13,6 +13,9 @@ data:
   {{- range $key, $value := .Values.config.postfix }}
   POSTFIX_{{ $key }}: {{ $value | quote }}
   {{- end }}
+  {{- if .Values.metrics.enabled }}
+  POSTFIX_maillog_file: {{ .Values.metrics.maillog }}
+  {{- end }}
   {{- range $key, $value := .Values.config.opendkim }}
   OPENDKIM_{{ $key }}: {{ $value | quote }}
   {{- end }}

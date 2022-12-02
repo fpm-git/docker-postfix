@@ -119,6 +119,44 @@ spec:
             {{- end }}
             {{- if .Values.extraVolumeMounts }}{{- toYaml .Values.extraVolumeMounts | nindent 12 }}{{ end }}
           resources: {{ toYaml .Values.resources | nindent 12 }}
+        {{- if .Values.metrics.enabled }}
+        - name: exporter
+          imagePullPolicy: Always
+          image: {{ .Values.metrics.image }}
+          ports:
+          - containerPort: {{ .Values.metrics.port }}
+            name: metrics
+            protocol: TCP
+          args:
+          - sleep 15s; /bin/postfix_exporter
+          command:
+          - sh
+          - -c
+          volumeMounts:
+            - mountPath: /var/spool/postfix
+              name: {{ $fullName }}
+              subPath: spool
+            - mountPath: /var/log/
+              name: {{ $fullName }}
+              subPath: logs
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: {{ .Values.metrics.port }}
+            initialDelaySeconds: 5
+        - name: postfix-logs
+          imagePullPolicy: Always
+          image: alpine:latest
+          args:
+          - sleep 15s; tail {{ .Values.metrics.maillog }} -f | grep -v "connect from localhost\[127\.0\.0\.1\]\|lost connection after EHLO from localhost\[127\.0\.0\.1\]"
+          command:
+          - sh
+          - -c
+          volumeMounts:
+            - mountPath: /var/log/
+              name: {{ $fullName }}
+              subPath: logs
+        {{- end }}
         {{- if .Values.extraContainers }}
         {{- tpl .Values.extraContainers $root | nindent 8 }}
         {{- end }}
