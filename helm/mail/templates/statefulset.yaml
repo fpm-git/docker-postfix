@@ -96,10 +96,6 @@ spec:
           volumeMounts:
             - mountPath: /var/spool/postfix
               name: {{ $fullName }}
-            - mountPath: /var/spool/postfix/private
-              name: private
-            - mountPath: /var/spool/postfix/public
-              name: public
             {{- if .Values.certs.create }}
             - name: certs
               mountPath: /var/run/certs
@@ -120,12 +116,7 @@ spec:
         {{- tpl .Values.extraContainers $root | nindent 8 }}
         {{- end }}
       volumes:
-        # Socket directories
-        - name: public
-          emptyDir: {}
-        - name: private
-          emptyDir: {}
-        {{- if .Values.certs.create }}
+            {{- if .Values.certs.create }}
         - name: certs-init
           configMap:
             name: {{ $fullName }}
@@ -134,6 +125,7 @@ spec:
           secret:
             secretName: {{ $fullName }}-certs
         {{- end }}
+        # Socket directories
         {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
         - name: {{ $fullName }}
           persistentVolumeClaim:

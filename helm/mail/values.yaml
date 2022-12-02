@@ -91,10 +91,6 @@ extraContainers: []
 #     volumeMounts:
 #       - mountPath: /var/spool/postfix
 #         name: mail
-#       - mountPath: /var/spool/postfix/private
-#         name: private
-#       - mountPath: /var/spool/postfix/public
-#         name: public
 #       - mountPath: /var/log/
 #         name: logs
 #     readinessProbe:
@@ -133,9 +129,11 @@ container:
   postfix:
     securityContext: {}
 
-# Auto-generate certificates for the server and mount them into Postfix volume
 certs:
+  # Auto-generate certificates for the server and mount them into Postfix volume
   create: false
+  # Provide existing cert
+  exising: false
 
 # Define data which should be stored in a Secret
 # (and shared with the pod as environment variables)
