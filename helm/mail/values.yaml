@@ -65,16 +65,6 @@ extraInitContainers: []
 extraEnv: []
 extraContainers: []
 #Enable to following blocks for metrics
-
-# extraVolumeMounts: 
-# - name: logs
-#   mountPath: /var/log/
-#   readOnly: false
-
-# extraVolumes:
-#   - name: logs
-#     emptyDir: {}
-
 # extraContainers: |
 #   - name: exporter
 #     imagePullPolicy: Always
@@ -91,8 +81,10 @@ extraContainers: []
 #     volumeMounts:
 #       - mountPath: /var/spool/postfix
 #         name: mail
+#         subPath: spool
 #       - mountPath: /var/log/
-#         name: logs
+#         name: mail
+#         subPath: logs
 #     readinessProbe:
 #       httpGet:
 #         path: /metrics
@@ -108,7 +100,8 @@ extraContainers: []
 #     - -c
 #     volumeMounts:
 #       - mountPath: /var/log/
-#         name: logs
+#         name: mail
+#         subPath: logs
 
 deployment:
   labels: {}
