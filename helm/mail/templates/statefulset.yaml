@@ -96,6 +96,13 @@ spec:
           volumeMounts:
             - mountPath: /var/spool/postfix
               name: {{ $fullName }}
+              subPath: spool
+              {{ - if .Values.metrics.enabled }}
+            - name: {{ $fullName }}
+              mountPath: /var/log/
+              readOnly: false
+              subPath: logs
+              {{- end }}
             {{- if .Values.certs.create }}
             - name: certs
               mountPath: /var/run/certs
