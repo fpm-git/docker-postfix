@@ -73,12 +73,6 @@ spec:
           lifecycle:
             # If a container has a preStop hook configured, that runs before the container enters the Terminated state.
             {{- if .Values.metrics.enabled }}
-            preStop:
-              exec:
-                command:
-                  - bash
-                  - -c
-                  - touch /tmp/container_is_terminating && echo "Flushing pending queue..." && postqueue -f; sleep 10s;  killall5 -15 supervisord
             {{- else }}
             preStop:
               exec:
