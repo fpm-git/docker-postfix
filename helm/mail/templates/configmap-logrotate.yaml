@@ -1,0 +1,25 @@
+{{- if .Values.metrics.enabled }}
+{{- if .Values.metrics.logrotate.enabled }}
+{{- $chart := "mail" -}}
+{{- $labels := include (print $chart ".labels") . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logrotate-config
+  labels:
+    {{- $labels | nindent 4 }}
+data:
+  logrotate.conf: |
+    /var/log/mail.log {
+        rotate 1
+        monthly
+        minsize 1M
+        compress
+        missingok
+        notifempty
+        dateext
+        olddir /var/log/old
+        maxage 90
+    }
+{{- end }}
+{{- end }}

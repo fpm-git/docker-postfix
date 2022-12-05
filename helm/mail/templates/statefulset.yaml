@@ -156,6 +156,15 @@ spec:
             - mountPath: /var/log/
               name: {{ $fullName }}
               subPath: logs
+        {{- if .Values.metrics.logrotate.enabled }}
+        - name: logrotate
+          image: blacklabelops/logrotate
+          volumeMounts:
+          - mountPath: /var/log
+            name: {{ $fullName }}
+          - mountPath: /etc/logrotate.d
+            name: logrotate-config
+        {{- end }}
         {{- end }}
         {{- if .Values.extraContainers }}
         {{- tpl .Values.extraContainers $root | nindent 8 }}
@@ -185,6 +194,14 @@ spec:
         - name: mount-secret
           secret:
             secretName: {{ $fullName }}-mount
+        {{- end }}
+
+        {{- if .Values.metrics.enabled }}
+        {{- if .Values.metrics.logrotate.enabled }}
+        - name: logrotate-config
+          configMap:
+            name: logrotate-config
+        {{- end }}
         {{- end }}
         {{- if .Values.extraVolumes }}{{- toYaml .Values.extraVolumes | nindent 8 }}{{ end }}
   {{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}

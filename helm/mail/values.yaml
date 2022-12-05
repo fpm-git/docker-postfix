@@ -27,6 +27,8 @@ metrics:
   image: ""
   #This is what https://github.com/kumina/postfix_exporter is expecting, so setting as default
   maillog: /var/log/mail.log
+  logrotate:
+    enabled: true
 
 # Tell helm to restart (recreate) pods on every deploy. Setting this to true will inject
 # `date/deploy-date: <timestamp>` annotation into pod specification for StateFulset. This
