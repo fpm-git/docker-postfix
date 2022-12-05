@@ -72,15 +72,12 @@ spec:
           startupProbe: {{- toYaml .Values.startupProbe | nindent 12 }}
           lifecycle:
             # If a container has a preStop hook configured, that runs before the container enters the Terminated state.
-            {{- if .Values.metrics.enabled }}
-            {{- else }}
             preStop:
               exec:
                 command:
                   - bash
                   - -c
                   - touch /tmp/container_is_terminating && while ! [[ "`mailq`" == *empty* ]]; do echo "Flushing queue..." && postfix flush; sleep 1; done; killall5 -15 supervisord
-            {{- end }}
             {{- if .Values.lifecycle.postStart }}
             postStart: {{- toYaml .Values.lifecycle.postStart | nindent 14 }}
             {{- end }}
