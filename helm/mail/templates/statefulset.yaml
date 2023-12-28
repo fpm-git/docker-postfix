@@ -99,6 +99,7 @@ spec:
             postStart: {{- toYaml .Values.lifecycle.postStart | nindent 14 }}
             {{- end }}
           {{- if .Values.GenerateHostName.enabled }}
+          command: ["/var/generate-hostname/set_hostname.sh"]
           env: 
             - name: POSTFIX_myhostname
               valueFrom:
@@ -160,6 +161,8 @@ spec:
             - mountPath: "/var/worker-ip"
               name: {{ $fullName | quote }}
               subPath: ip
+            - mountPath: "/var/generate-hostname"
+              name: hostname-init
             {{- end }}
           resources: {{ toYaml .Values.resources | nindent 12 }}
         {{- if .Values.metrics.enabled }}
@@ -246,6 +249,11 @@ spec:
           configMap:
             name: {{ print $fullName "-scripts" | quote }}
             defaultMode: 0777
+        {{- end }}
+        {{- if .Values.GenerateHostName.enabled }}
+        - name: hostname-script
+          configMap:
+            name: hostname-init
         {{- end }}
         {{- if .Values.extraVolumes }}{{- toYaml .Values.extraVolumes | nindent 8 }}{{ end }}
   {{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
