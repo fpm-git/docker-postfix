@@ -151,6 +151,13 @@ mountSecret:
     #   < redacted >
     #   -----END RSA PRIVATE KEY-----
 
+
+# if the following is true, config.prefix.myhostname should not be set
+GenerateHostName:
+  enabled: false
+  domain: example.com
+  prefix: smtp
+
 config:
   general: {}
     # e.g.

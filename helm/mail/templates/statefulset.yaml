@@ -48,13 +48,30 @@ spec:
       {{ with .Values.affinity }}affinity: {{- toYaml . | nindent 8 }} {{- end }}
       {{ with .Values.tolerations }}tolerations: {{- toYaml . | nindent 8 }} {{- end }}
 
-      {{- if .Values.extraInitContainers }}
+      {{- if or .Values.extraInitContainers .Values.GenerateHostName.enabled }}
       #
       # Init containers
       #
       initContainers:
-      {{- tpl .Values.extraInitContainers . | nindent 6 }}
       {{- end }}
+      {{- if .Values.extraInitContainers}}
+      {{- tpl .Values.extraInitContainers . | nindent 6 }}
+      {{- else if .Values.GenerateHostName.enabled }}
+        - name: get-public-ip
+          image: curlimages/curl:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              IP=$(curl http://ipinfo.io/ip);
+              PREFIX={{- .Values.GenerateHostName.prefix -}};
+              DOMAIN={{- .Values.GenerateHostName.domain -}};
+              echo "${PREFIX}-${IP}.${DOMAIN}" > /var/worker-ip/hostname.txt;
+          volumeMounts:
+            - mountPath: "/var/worker-ip"
+              name: {{ $fullName | quote }}
+              subPath: ip
+      {{- end }}
+
 
       # Allow up to 2 minutes for Postfix to flush / empty the queue  before shutting down the container
       terminationGracePeriodSeconds: 120
@@ -81,6 +98,13 @@ spec:
             {{- if .Values.lifecycle.postStart }}
             postStart: {{- toYaml .Values.lifecycle.postStart | nindent 14 }}
             {{- end }}
+          {{- if .Values.GenerateHostName.enabled }}
+          env: 
+            - name: POSTFIX_myhostname
+              valueFrom:
+                fieldRef:
+                  fieldPath: "/var/worker-ip/hostname.txt"
+          {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ $fullName | quote }}
@@ -132,6 +156,11 @@ spec:
               readOnly: true
             {{- end }}
             {{- if .Values.extraVolumeMounts }}{{- toYaml .Values.extraVolumeMounts | nindent 12 }}{{ end }}
+            {{- if .Values.GenerateHostName.enabled }}
+            - mountPath: "/var/worker-ip"
+              name: {{ $fullName | quote }}
+              subPath: ip
+            {{- end }}
           resources: {{ toYaml .Values.resources | nindent 12 }}
         {{- if .Values.metrics.enabled }}
         - name: exporter
