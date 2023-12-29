@@ -132,16 +132,17 @@ postfix_enable_chroot() {
 	fi
 	(
 		umask 022
-		[[ -d "$POSTFIXD_ETC" ]]    && mkdir -pv                  $POSTFIXD_ETC || true
-		[[ -d "$POSTFIXD_ZIF" ]]    && mkdir -pv                  $POSTFIXD_ZIF || true
-		[[ -e /etc/localtime ]]     && ln -fsv /etc/localtime     $POSTFIXD_ZIF || true
-		[[ -e /etc/localtime ]]     && cp -fpv /etc/localtime     $POSTFIXD_ETC || true
-		[[ -e /etc/nsswitch.conf ]] && cp -fpv /etc/nsswitch.conf $POSTFIXD_ETC || true
-		[[ -e /etc/resolv.conf ]]   && cp -fpv /etc/resolv.conf   $POSTFIXD_ETC || true
-		[[ -e /etc/services ]]      && cp -fpv /etc/services      $POSTFIXD_ETC || true
-		[[ -e /etc/host.conf ]]     && cp -fpv /etc/host.conf     $POSTFIXD_ETC || true
-		[[ -e /etc/hosts ]]         && cp -fpv /etc/hosts         $POSTFIXD_ETC || true
-		[[ -e /etc/passwd ]]        && cp -fpv /etc/passwd        $POSTFIXD_ETC || true
+		[[ -d "$POSTFIXD_DIR" ]]    && mkdir -pv                  $POSTFIXD_DIR  || true
+		[[ -d "$POSTFIXD_ETC" ]]    && mkdir -pv                  $POSTFIXD_ETC  || true
+		[[ -d "$POSTFIXD_ZIF" ]]    && mkdir -pv                  $POSTFIXD_ZIF  || true
+		[[ -e /etc/localtime ]]     && ln -fsv /etc/localtime     $POSTFIXD_ZIF/ || true
+		[[ -e /etc/localtime ]]     && cp -fpv /etc/localtime     $POSTFIXD_ETC  || true
+		[[ -e /etc/nsswitch.conf ]] && cp -fpv /etc/nsswitch.conf $POSTFIXD_ETC  || true
+		[[ -e /etc/resolv.conf ]]   && cp -fpv /etc/resolv.conf   $POSTFIXD_ETC  || true
+		[[ -e /etc/services ]]      && cp -fpv /etc/services      $POSTFIXD_ETC  || true
+		[[ -e /etc/host.conf ]]     && cp -fpv /etc/host.conf     $POSTFIXD_ETC  || true
+		[[ -e /etc/hosts ]]         && cp -fpv /etc/hosts         $POSTFIXD_ETC  || true
+		[[ -e /etc/passwd ]]        && cp -fpv /etc/passwd        $POSTFIXD_ETC  || true
 	) | sed 's/^/        /g'
 }
 

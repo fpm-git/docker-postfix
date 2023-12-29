@@ -52,6 +52,7 @@ metrics:
     enabled: true
     logrotate.conf: |
       /var/log/mail.log {
+          copytruncate
           rotate 1
           monthly
           minsize 1M

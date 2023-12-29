@@ -122,11 +122,11 @@ Several potentially "surprising" changes went into this issue and hence warrant 
 - **Default image is now based on Debian.** A lot of packages needed for
   latest builds are missing in certain Alpine architectures. Debian
   allows us to have a greater cross-platform availability.
-- Helm charts are now built with `v` and without `v` prefix.
+- **Helm charts are now built with `v` and without `v` prefix.**
   As seen in [PR #141](https://github.com/bokysan/docker-postfix/pull/141) some tools rely on version not
   having the prefix. I've seen both in the wild, so the image
   now includes both. This should work and should hopefully provide most compatibility.
-- [master](https://github.com/bokysan/docker-postfix/tree/master/) branch now builds images called `edge`. `latest`
+- **[`master`](https://github.com/bokysan/docker-postfix/tree/master/) branch now builds images called [`edge`](https://hub.docker.com/r/boky/postfix/tags?page=1&name=edge)**. `latest`
   images are built from the last tag. We've had several issues
   with people using the `latest` tag and reporting problems.
   You can now rely on `latest` being the latest stable release.
@@ -136,6 +136,8 @@ Several potentially "surprising" changes went into this issue and hence warrant 
 - **Architecture galore!** With the addition of debian images, we now support support more architectures than ever. The list includes: 
   `linux/386`, `linux/amd64`, `linux/arm/v5`, `linux/arm/v6`, `linux/arm/v7`, `linux/arm64`, `linux/arm64/v8`, `linux/mips64le`, 
   `linux/ppc64le` and `linux/s390x`.
+- **`smtpd_tls_security_level` is now set to `may`**. If you encounter
+  issues, try setting it to `none` expliclity (see [#160](https://github.com/bokysan/docker-postfix/issues/160)).
 
 ### v3.0.0
 
