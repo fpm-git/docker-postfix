@@ -133,8 +133,9 @@ spec:
             {{- end }}
             {{- if .Values.extraVolumeMounts }}{{- toYaml .Values.extraVolumeMounts | nindent 12 }}{{ end }}
             {{- if .Values.GenerateHostName.enabled }}
-            - mountPath: "/docker-init.db/"
+            - mountPath: /docker-init.db/set_hostname.sh
               name: hostname-init
+              subPath: set_hostname.sh
             {{- end }}
           resources: {{ toYaml .Values.resources | nindent 12 }}
         {{- if .Values.metrics.enabled }}
