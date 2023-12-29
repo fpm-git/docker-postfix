@@ -1,0 +1,20 @@
+{{- if .Values.GenerateHostName.enabled }}
+{{- $chart := "mail" -}}
+{{- $fullName := include (print $chart ".fullname") . -}}
+{{- $labels := include (print $chart ".labels") . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hostname-init
+  labels:
+    {{- $labels | nindent 4 }}
+data:
+  set_hostname.sh: |
+    #!/usr/bin/env bash
+    # This should be placed under /docker-init.db/set_hostname.sh
+    IP=$(curl http://ipinfo.io/ip)
+    IP=$(echo "$IP" | tr '.' '-')
+    PREFIX={{- .Values.GenerateHostName.prefix -}};
+    DOMAIN={{- .Values.GenerateHostName.domain -}};
+    postconf -e "myhostname=${PREFIX}-${IP}.${DOMAIN}"
+{{- end }}

@@ -132,6 +132,10 @@ spec:
               readOnly: true
             {{- end }}
             {{- if .Values.extraVolumeMounts }}{{- toYaml .Values.extraVolumeMounts | nindent 12 }}{{ end }}
+            {{- if .Values.GenerateHostName.enabled }}
+            - mountPath: "/docker-init.db/"
+              name: hostname-init
+            {{- end }}
           resources: {{ toYaml .Values.resources | nindent 12 }}
         {{- if .Values.metrics.enabled }}
         - name: exporter
@@ -216,6 +220,12 @@ spec:
         - name: metrics-config-scripts
           configMap:
             name: {{ print $fullName "-scripts" | quote }}
+            defaultMode: 0777
+        {{- end }}
+        {{- if .Values.GenerateHostName.enabled }}
+        - name: hostname-init
+          configMap:
+            name: hostname-init
             defaultMode: 0777
         {{- end }}
         {{- if .Values.extraVolumes }}{{- toYaml .Values.extraVolumes | nindent 8 }}{{ end }}
