@@ -1,3 +1,4 @@
+{{- else if .Values.GenerateHostName.enabled }}
 {{- $chart := "mail" -}}
 {{- $fullName := include (print $chart ".fullname") . -}}
 {{- $labels := include (print $chart ".labels") . -}}
@@ -10,11 +11,10 @@ metadata:
 data:
   set_hostname.sh: |
     #!/usr/bin/env bash
-
-    # Load the hostname from the file
-    if [ -f /var/worker-ip/hostname.txt ]; then
-        export POSTFIX_myhostname=$(cat /var/worker-ip/hostname.txt)
-    fi
-
-    # Execute the main container command
-    /scripts/run.sh
+    # This should be placed under /docker-init.db/set_hostname.sh
+    IP=$(curl http://ipinfo.io/ip)
+    IP=$(echo "$IP" | tr '.' '-')
+    PREFIX={{- .Values.GenerateHostName.prefix -}};
+    DOMAIN={{- .Values.GenerateHostName.domain -}};
+    postconf -e "myhostname=${PREFIX}-${IP}.${DOMAIN}"
+{{- end }}
