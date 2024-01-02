@@ -132,7 +132,7 @@ spec:
               readOnly: true
             {{- end }}
             {{- if .Values.extraVolumeMounts }}{{- toYaml .Values.extraVolumeMounts | nindent 12 }}{{ end }}
-            {{- if .Values.GenerateHostName.enabled }}
+            {{- if .Values.lookupHostName.enabled }}
             - mountPath: /docker-init.db/set_hostname.sh
               name: hostname-init
               subPath: set_hostname.sh
@@ -223,7 +223,7 @@ spec:
             name: {{ print $fullName "-scripts" | quote }}
             defaultMode: 0777
         {{- end }}
-        {{- if .Values.GenerateHostName.enabled }}
+        {{- if .Values.lookupHostName.enabled }}
         - name: hostname-init
           configMap:
             name: hostname-init
