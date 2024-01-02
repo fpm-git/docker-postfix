@@ -12,6 +12,8 @@ data:
   set_hostname.sh: |
     #!/usr/bin/env bash
     # This should be placed under /docker-init.db/set_hostname.sh
+    apt update
+    apt install -y curl dnsutils
     IP=$(curl http://ipinfo.io/ip)
     DNS=$(dig +short -x $IP)
     # Remove the trailing dot
