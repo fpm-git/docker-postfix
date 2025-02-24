@@ -219,4 +219,69 @@ file_env() {
 	unset "$fileVar"
 }
 
+# Return the directory where zone info is stored. Will return empy string if zoneinfo not found
+zone_info_dir() {
+	[[ -d /usr/share/zoneinfo ]] && printf "/usr/share/zoneinfo" && return
+	[[ -d /var/db/timezone/zoneinfo ]] && printf "/var/db/timezone/zoneinfo" && return
+	[[ -d /usr/lib/zoneinfo ]] && printf "/usr/lib/zoneinfo" && return
+	return
+}
+
+###################################################################
+# Remove leading and trailing whitespace from string
+###################################################################
+trim() {
+	local var
+	IFS='' read -d -r var
+	#var="$(<&1)"
+	# remove leading whitespace characters
+	var="${var#"${var%%[![:space:]]*}"}"
+	# remove trailing whitespace characters
+	var="${var%"${var##*[![:space:]]}"}"
+	printf '%s' "${var}"
+}
+
+###################################################################
+# Potential fix for #180. Plugin names do not neccessarily match 
+# filter names.
+#
+# This is an utility method which converts SASL plugin names into
+# filter names. There's no reliable way to guess this, so the names
+# have been hardcoded here.
+#
+# INPUT:
+# The method expects as an input a list of plugin names, comma
+# separated.
+#
+# OUTPUT:
+# The list of plugin names, comma separated.
+###################################################################
+convert_plugin_names_to_filter_names() {
+	local line first value lowercase
+	while IFS=$',' read -ra line; do
+		for value in "${line[@]}"; do
+			value="$(printf '%s' "${value}" | trim)"
+			if [[ -z "${value}" ]]; then
+				continue;
+			fi
+
+			if [[ -z "${first}" ]]; then
+				first="0"
+			else
+				printf '%s' ','
+			fi
+
+			lowercase="${value,,}"
+
+			if [[ "${lowercase}" == "digestmd5" ]]; then
+				printf '%s' 'DIGEST-MD5'
+			elif [[ "${lowercase}" == "crammd5" ]]; then
+				printf '%s' 'CRAM-MD5'
+			else
+				printf '%s' "${value}"
+			fi
+		done
+	done
+}
+
 export reset green yellow orange orange_emphasis lightblue red gray emphasis underline

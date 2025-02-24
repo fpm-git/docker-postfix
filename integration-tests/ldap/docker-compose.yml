@@ -1,0 +1,31 @@
+version: '3.7'
+services:
+  tests:
+    hostname: "postfix"
+    image: "boky/postfix"
+    restart: "no"
+    volumes:
+      - "./tests:/tests"
+      - "./postfix-conf:/etc/postfix/conf/"
+    environment:
+      FORCE_COLOR: "1"
+      ALLOWED_EMPTY_SENDER_DOMAINS: "example.org"
+      POSTFIX_smtpd_end_of_data_restrictions: "check_client_access static:discard"
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: [ "/tests/test.sh" ]
+    depends_on:
+      ldap:
+        condition: service_healthy
+        restart: true
+  ldap:
+    hostname: "ldap"
+    image: "thoteam/slapd-server-mock"
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "bash -c 'exec 6<> /dev/tcp/localhost/389'" ]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 2
+    volumes:
+      - "./ldap-conf:/bootstrap/"

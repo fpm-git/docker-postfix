@@ -2,7 +2,8 @@
 
 ![Build status](https://github.com/bokysan/docker-postfix/workflows/Docker%20image/badge.svg) [![Latest commit](https://img.shields.io/github/last-commit/bokysan/docker-postfix)](https://github.com/bokysan/docker-postfix/commits/master) [![Latest release](https://img.shields.io/github/v/release/bokysan/docker-postfix?sort=semver&Label=Latest%20release)](https://github.com/bokysan/docker-postfix/releases) [![Docker image size](https://img.shields.io/docker/image-size/boky/postfix?sort=semver)](https://hub.docker.com/r/boky/postfix/) ![GitHub Repo stars](https://img.shields.io/github/stars/bokysan/docker-postfix?label=GitHub%20Stars&style=flat) [![Docker Stars](https://img.shields.io/docker/stars/boky/postfix.svg?label=Docker%20Stars)](https://hub.docker.com/r/boky/postfix/) [![Docker Pulls](https://img.shields.io/docker/pulls/boky/postfix.svg)](https://hub.docker.com/r/boky/postfix/) ![License](https://img.shields.io/github/license/bokysan/docker-postfix) [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fbokysan%2Fdocker-postfix.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fbokysan%2Fdocker-postfix?ref=badge_shield)
 
-Simple postfix relay host ("postfix null client") for your Docker containers. Based on Alpine Linux.
+Simple postfix relay host ("postfix null client") for your Docker containers. Based on Debian (default), Ubuntu and Alpine Linux. 
+Feel free to pick your favourite distro.
 
 ## Table of contents
 
@@ -38,7 +39,7 @@ Simple postfix relay host ("postfix null client") for your Docker containers. Ba
         - [The `paranoid` filter](#the-paranoid-filter)
         - [The `hash` filter](#the-hash-filter)
         - [The `noop` filter](#the-noop-filter)
-        - [Writting your own filters](#writting-your-own-filters)
+        - [Writing your own filters](#writing-your-own-filters)
     - [DKIM / DomainKeys](#dkim--domainkeys)
       - [Supplying your own DKIM keys](#supplying-your-own-dkim-keys)
       - [Auto-generating the DKIM selectors through the image](#auto-generating-the-dkim-selectors-through-the-image)
@@ -51,6 +52,7 @@ Simple postfix relay host ("postfix null client") for your Docker containers. Ba
   - [Extending the image](#extending-the-image)
     - [Using custom init scripts](#using-custom-init-scripts)
   - [Security](#security)
+    - [UIDs/GIDs numbers](#uidsgids-numbers)
   - [Quick how-tos](#quick-how-tos)
     - [Relaying messages through your Gmail account](#relaying-messages-through-your-gmail-account)
     - [Relaying messages through Google Apps account](#relaying-messages-through-google-apps-account)
@@ -95,16 +97,16 @@ to allow sending from this IP/server/nameblock, **your emails will most likely b
 
 All standard caveats of configuring the SMTP server apply:
 
-* **MAKE SURE YOUR OUTGOING PORT 25 IS NOT BLOCKED.**
-  * Most ISPs block outgoing connections to port 25 and several companies (e.g.
+- **MAKE SURE YOUR OUTGOING PORT 25 IS NOT BLOCKED.**
+  - Most ISPs block outgoing connections to port 25 and several companies (e.g.
     [NoIP](https://www.noip.com/blog/2013/03/26/my-isp-blocks-smtp-port-25-can-i-still-host-a-mail-server/),
     [Dynu](https://www.dynu.com/en-US/Blog/Article?Article=How-to-host-email-server-if-ISP-blocks-port-25)) offer
     workarounds.
-  * Hosting centers also tend to block port 25, which can be unblocked per request, see below for AWS hosting.
-* You'll most likely need to at least [set up SPF records](https://en.wikipedia.org/wiki/Sender_Policy_Framework) (see also [openspf](http://www.open-spf.org/)) and/or
-  [DKIM](https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail).
-* If using DKIM ([below](#dkim--domainkeys)), make sure to add DKIM keys to your domain's DNS entries.
-* You'll most likely need to set up [PTR](https://en.wikipedia.org/wiki/Reverse_DNS_lookup) records as well to prevent your
+  - Hosting centers also tend to block port 25, which can be unblocked per request, see below for AWS hosting.
+- You'll most likely need to at least [set up SPF records](https://en.wikipedia.org/wiki/Sender_Policy_Framework)
+  (see also [openspf](http://www.open-spf.org/)) and/or [DKIM](https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail).
+- If using DKIM ([below](#dkim--domainkeys)), make sure to add DKIM keys to your domain's DNS entries.
+- You'll most likely need to set up [PTR](https://en.wikipedia.org/wiki/Reverse_DNS_lookup) records as well to prevent your
   mails going to spam.
 
 If you don't know what any of the above means, get some help. Google is your friend. It's also worth noting that it's pretty difficult
@@ -126,10 +128,9 @@ Several potentially "surprising" changes went into this issue and hence warrant 
   As seen in [PR #141](https://github.com/bokysan/docker-postfix/pull/141) some tools rely on version not
   having the prefix. I've seen both in the wild, so the image
   now includes both. This should work and should hopefully provide most compatibility.
-- **[`master`](https://github.com/bokysan/docker-postfix/tree/master/) branch now builds images called [`edge`](https://hub.docker.com/r/boky/postfix/tags?page=1&name=edge)**. `latest`
-  images are built from the last tag. We've had several issues
-  with people using the `latest` tag and reporting problems.
-  You can now rely on `latest` being the latest stable release.
+- **[`master`](https://github.com/bokysan/docker-postfix/tree/master/) branch now builds images called [`edge`](https://hub.docker.com/r/boky/postfix/tags?page=1&name=edge)**. 
+  `latest` images are built from the last tag. We've had several issues with people using the `latest` tag
+  and reporting problems. You can now rely on `latest` being the latest stable release.
 - Image now builds its own version of [postfix-exporter](https://github.com/kumina/postfix_exporter) and relies on this
   third-party project. Checkout is from master branch, based
   on specific SHA commit id. The same hash is used for master and tags.
@@ -137,7 +138,7 @@ Several potentially "surprising" changes went into this issue and hence warrant 
   `linux/386`, `linux/amd64`, `linux/arm/v5`, `linux/arm/v6`, `linux/arm/v7`, `linux/arm64`, `linux/arm64/v8`, `linux/mips64le`, 
   `linux/ppc64le` and `linux/s390x`.
 - **`smtpd_tls_security_level` is now set to `may`**. If you encounter
-  issues, try setting it to `none` expliclity (see [#160](https://github.com/bokysan/docker-postfix/issues/160)).
+  issues, try setting it to `none` explicitly (see [#160](https://github.com/bokysan/docker-postfix/issues/160)).
 
 ### v3.0.0
 
@@ -155,7 +156,7 @@ image has been updated to `v3.0.0`.
 
 ## Architectures
 
-Available for all your favourite architectures. Run in your server cluster. Run it on your Raspberry Pi 4. Run it on your acient Pentium or an old Beaglebone. The following architectures are supported: `linux/386`, `linux/amd64`, `linux/arm/v6`, `linux/arm/v7`, `linux/arm64` and `linux/ppc64le`.
+Available for all your favourite architectures. Run in your server cluster. Run it on your Raspberry Pi 4. Run it on your ancient Pentium or an old Beaglebone. The following architectures are supported: `linux/386`, `linux/amd64`, `linux/arm/v6`, `linux/arm/v7`, `linux/arm64` and `linux/ppc64le`.
 
 ## Configuration options
 
@@ -192,30 +193,32 @@ string. Then extend this image through custom scripts to configure Postfix furth
 #### Log format
 
 The image will by default output logs in human-readable (`plain`) format. If you are deploying the image to Kubernetes, it might
-be worth chaging the output format to `json` as it's more easily parsable by tools such as [Prometheus](https://prometheus.io/).
+be worth changing the output format to `json` as it's more easily parsable by tools such as [Prometheus](https://prometheus.io/).
 
 To change the log format, set the (unsurprisingly named) variable `LOG_FORMAT=json`.
 
 ### Postfix-specific options
 
-* `RELAYHOST` = Host that relays your messages
-* `SASL_RELAYHOST` = (optional) Relay Host referenced in the `sasl_passwd` file. Defaults to the value of `RELAYHOST`
-* `RELAYHOST_USERNAME` = An (optional) username for the relay server
-* `RELAYHOST_PASSWORD` = An (optional) login password for the relay server
-* `RELAYHOST_PASSWORD_FILE` = An (optional) file containing the login password for the relay server. Mutually exclusive with the previous option.
-* `POSTFIX_smtp_tls_security_level` = Relay host TLS connection level
-* `XOAUTH2_CLIENT_ID` = OAuth2 client id used when configured as a relayhost.
-* `XOAUTH2_SECRET` = OAuth2 secret used when configured as a relayhost.
-* `XOAUTH2_INITIAL_ACCESS_TOKEN` = Initial OAuth2 access token.
-* `XOAUTH2_INITIAL_REFRESH_TOKEN` = Initial OAuth2 refresh token.
-* `XOAUTH2_TOKEN_ENDPOINT` = Token endpoint provided four your XOAUTH App , GMail use : https://accounts.google.com/o/oauth2/token
-* `SMTPD_SASL_USERS` = Users allow to send mail (ex: user1:pass1,user2:pass2,...)
-* `MASQUERADED_DOMAINS` = domains where you want to masquerade internal hosts
-* `SMTP_HEADER_CHECKS`= Set to `1` to enable header checks of to a location of the file for header checks
-* `POSTFIX_myhostname` = Set the name of this postfix server
-* `POSTFIX_mynetworks` = Allow sending mails only from specific networks ( default `127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16` )
-* `POSTFIX_message_size_limit` = The maximum size of the messsage, in bytes, by default it's unlimited
-* `POSTFIX_<any_postfix_setting>` = provide any additional postfix setting
+- `RELAYHOST` = Host that relays your messages
+- `SASL_RELAYHOST` = (optional) Relay Host referenced in the `sasl_passwd` file. Defaults to the value of `RELAYHOST`
+- `RELAYHOST_USERNAME` = An (optional) username for the relay server
+- `RELAYHOST_PASSWORD` = An (optional) login password for the relay server
+- `RELAYHOST_PASSWORD_FILE` = An (optional) file containing the login password for the relay server. Mutually exclusive with the previous option.
+- `POSTFIX_smtp_tls_security_level` = Relay host TLS connection level
+- `XOAUTH2_CLIENT_ID` = OAuth2 client id used when configured as a relayhost.
+- `XOAUTH2_SECRET` = OAuth2 secret used when configured as a relayhost.
+- `XOAUTH2_INITIAL_ACCESS_TOKEN` = Initial OAuth2 access token.
+- `XOAUTH2_INITIAL_REFRESH_TOKEN` = Initial OAuth2 refresh token.
+- `XOAUTH2_TOKEN_ENDPOINT` = Token endpoint provided four your XOAUTH App , GMail use : https://accounts.google.com/o/oauth2/token
+- `SMTPD_SASL_USERS` = Users allow to send mail (ex: user1:pass1,user2:pass2,...). *Warning:* Users need to be specified with a domain, as explained
+  on ticket [[#192](https://github.com/bokysan/docker-postfix/issues/192)]. This image will automatically add a domain if one is not provided and will
+  issue a notice when that happens.
+- `MASQUERADED_DOMAINS` = domains where you want to masquerade internal hosts
+- `SMTP_HEADER_CHECKS`= Set to `1` to enable header checks of to a location of the file for header checks
+- `POSTFIX_myhostname` = Set the name of this postfix server
+- `POSTFIX_mynetworks` = Allow sending mails only from specific networks ( default `127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16` )
+- `POSTFIX_message_size_limit` = The maximum size of the message, in bytes, by default it's unlimited
+- `POSTFIX_<any_postfix_setting>` = provide any additional postfix setting
 
 #### `RELAYHOST`, `RELAYHOST_USERNAME` and `RELAYHOST_PASSWORD`
 
@@ -259,9 +262,9 @@ This level defines how the postfix will connect to your upstream server.
 
 These parameters allow you to configure a relayhost that requires (or recommends) the [XOAuth2 authentication method](https://github.com/tarickb/sasl-xoauth2) (e.g. GMail).
 
-* `XOAUTH2_CLIENT_ID` and  `XOAUTH2_SECRET` are the [OAuth2 client credentials](#oauth2-client-credentials-gmail).
-* `XOAUTH2_INITIAL_ACCESS_TOKEN` and `XOAUTH2_INITIAL_REFRESH_TOKEN` are the [initial access token and refresh tokens](#obtain-initial-access-token-gmail).
-* `XOAUTH2_TOKEN_ENDPOINT` is mandatory for Microsoft 365 use, sasl-xoauth2 will use Gmail URL if it is not provided.
+- `XOAUTH2_CLIENT_ID` and  `XOAUTH2_SECRET` are the [OAuth2 client credentials](#oauth2-client-credentials-gmail).
+- `XOAUTH2_INITIAL_ACCESS_TOKEN` and `XOAUTH2_INITIAL_REFRESH_TOKEN` are the [initial access token and refresh tokens](#obtain-initial-access-token-gmail).
+- `XOAUTH2_TOKEN_ENDPOINT` is mandatory for Microsoft 365 use, sasl-xoauth2 will use Gmail URL if it is not provided.
    These values are only  required to initialize the token file `/var/spool/postfix/xoauth2-tokens/$RELAYHOST_USERNAME`.
 
 Example:
@@ -376,7 +379,7 @@ variable) will remove that variable from postfix config.
 
 #### `SKIP_ROOT_SPOOL_CHOWN`
 
-Setting this to `1` will skip reowing in `/var/spool/postfix/` and `/var/spool/postfix/pid`. You generally do not
+Setting this to `1` will skip re-owning in `/var/spool/postfix/` and `/var/spool/postfix/pid`. You generally do not
 want to set this option unless you're running into specific issues (e.g. [#97](https://github.com/bokysan/docker-postfix/issues/97)).
 
 If unsure, leave it as is.
@@ -398,19 +401,19 @@ Enable the filter by setting `ANONYMIZE_EMAILS=smart`.
 
 The is enabled by setting the value to `on`, `true`, `1`, `default` or `smart`. The filter will take an educated guess at how to best mask the emails, specifically:
 
-* It will leave the first and the last letter of the local part (if the local part is one letter long it gets repeated atht beggining and the end)
-* If the local part is in quotes, it will remove the quotes (Warning: if the email starts with a space, this might look weird in logs)
-* It will replace all the letters inbetween with **ONE** asterisk, even if there are none
-* It will replace everything but a TLD with a star
-* Address-style domains will see the number replaced with stars
+- It will leave the first and the last letter of the local part (if the local part is one letter long it gets repeated atht beggining and the end)
+- If the local part is in quotes, it will remove the quotes (Warning: if the email starts with a space, this might look weird in logs)
+- It will replace all the letters inbetween with **ONE** asterisk, even if there are none
+- It will replace everything but a TLD with a star
+- Address-style domains will see the number replaced with stars
 
 E.g.:
 
-* `demo@example.org` -> `d*o@*******.org`
-* `john.doe@example.solutions` -> `j*e@*******.solutions`
-* `sa@localhost` -> `s*a@*********`
-* `s@[192.168.8.10]` -> `s*s@[*.*.*.*]`
-* `"multi....dot"@[IPv6:2001:db8:85a3:8d3:1319:8a2e:370:7348]` -> `"m*t"@[IPv6:***********]`
+- `demo@example.org` -> `d*o@*******.org`
+- `john.doe@example.solutions` -> `j*e@*******.solutions`
+- `sa@localhost` -> `s*a@*********`
+- `s@[192.168.8.10]` -> `s*s@[*.*.*.*]`
+- `"multi....dot"@[IPv6:2001:db8:85a3:8d3:1319:8a2e:370:7348]` -> `"m*t"@[IPv6:***********]`
 
 Configuration parameters:
 
@@ -422,16 +425,16 @@ Configuration parameters:
 
 The paranoid filter works similar to smart filter but will:
 
-* Replace the local part with **ONE** asterisk
-* Replace the domain part (sans TLD) with **ONE** asterisk
+- Replace the local part with **ONE** asterisk
+- Replace the domain part (sans TLD) with **ONE** asterisk
 
 E.g.:
 
-* `demo@example.org` -> `*@*.org`
-* `john.doe@example.solutions` -> `*@*.solutions`
-* `sa@localhost` -> `*@*`
-* `s@[192.168.8.10]` -> `*@[*]`
-* `"multi....dot"@[IPv6:2001:db8:85a3:8d3:1319:8a2e:370:7348]` -> `*@[IPv6:*]`
+- `demo@example.org` -> `*@*.org`
+- `john.doe@example.solutions` -> `*@*.solutions`
+- `sa@localhost` -> `*@*`
+- `s@[192.168.8.10]` -> `*@[*]`
+- `"multi....dot"@[IPv6:2001:db8:85a3:8d3:1319:8a2e:370:7348]` -> `*@[IPv6:*]`
 
 Configuration parameters:
 
@@ -447,8 +450,8 @@ and then grep through the logs for this specific email address.
 
 E.g.:
 
-* `prettyandsimple@example.com` -> `<3052a860ddfde8b50e39843d8f1c9f591bec442823d97948b811d38779e2c757>` for (`ANONYMIZE_EMAILS=hash?salt=hello%20world`)
-* `prettyandsimple@example.com` -> `c58731d3@8bd7a35c` for (`ANONYMIZE_EMAILS=hash?salt=hello%20world&split=true&short_sha=t&prefix=&suffix=`)
+- `prettyandsimple@example.com` -> `<3052a860ddfde8b50e39843d8f1c9f591bec442823d97948b811d38779e2c757>` for (`ANONYMIZE_EMAILS=hash?salt=hello%20world`)
+- `prettyandsimple@example.com` -> `c58731d3@8bd7a35c` for (`ANONYMIZE_EMAILS=hash?salt=hello%20world&split=true&short_sha=t&prefix=&suffix=`)
 
 Filter will not work without configuration. You will need to provide (at least) the salt, e.g.: `ANONYMIZE_EMAILS=hash?salt=demo`
 
@@ -467,10 +470,10 @@ Configuration parameters:
 
 This filter doesn't do anything. It's used for testing purposes only.
 
-##### Writting your own filters
+##### Writing your own filters
 
 It's easy enough to write your own filters. The simplest way would be to take the `email-anonymizer.py` file in this
-image, write your own and then attach it to the container image under `/scripts`. If you're feeling adentorous, you can
+image, write your own and then attach it to the container image under `/scripts`. If you're feeling adventureus, you can
 also install your own Python package -- the script will automatically pick up the class name.
 
 ### DKIM / DomainKeys
@@ -480,10 +483,9 @@ be either generated automatically, or you can supply them yourself.
 
 The DKIM supports the following options:
 
-* `DKIM_SELECTOR` = Override the default DKIM selector (by default "mail").
-* `DKIM_AUTOGENERATE` = Set to non-empty value (e.g. `true` or `1`) to have
-  the server auto-generate domain keys.
-* `OPENDKIM_<any_dkim_setting>` = Provide any additional OpenDKIM setting.
+- `DKIM_SELECTOR` = Override the default DKIM selector (by default "mail").
+- `DKIM_AUTOGENERATE` = Set to non-empty value (e.g. `true` or `1`) to have the server auto-generate domain keys.
+- `OPENDKIM_<any_dkim_setting>` = Provide any additional OpenDKIM setting.
 
 #### Supplying your own DKIM keys
 
@@ -536,9 +538,9 @@ DKIM_SELECTOR=foo,example.org=postfix,example.com=blah
 
 This means:
 
-* use `postfix` for `example.org` domain
-* use `blah` for `example.com` domain
-* use `foo` if no domain matches
+- use `postfix` for `example.org` domain
+- use `blah` for `example.com` domain
+- use `foo` if no domain matches
 
 #### Overriding specific OpenDKIM settings
 
@@ -550,7 +552,6 @@ variable from OpenDKIM config.
 
 I strongly suggest using a service such as [dkimvalidator](https://dkimvalidator.com/) to make sure your keys are set up
 properly and your DNS server is serving them with the correct records.
-
 
 ### Docker Secrets / Kubernetes secrets
 
@@ -627,7 +628,7 @@ Chart configuration is as follows:
 | `pod.securityContext` | `{}` | Pods's [security context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
 | `pod.labels` | `{}` | Additional labels for the pod |
 | `pod.annotations` | `{}` | Additional annotations for the pod |
-| `container.postfixsecurityContext` | `{}` | Containers's [security context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
+| `container.postfix.securityContext` | `{}` | Containers's [security context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
 | `config.general` | `{}` | Key-value list of general configuration options, e.g. `TZ: "Europe/London"` |
 | `config.postfix` | `{}` | Key-value list of general postfix options, e.g. `myhostname: "demo"` |
 | `config.opendkim` | `{}` | Key-value list of general OpenDKIM options, e.g. `RequireSafeKeys: "yes"` |
@@ -684,7 +685,22 @@ postconf -e "address_verify_negative_cache=yes"
 ## Security
 
 Postfix will run the master proces as `root`, because that's how it's designed. Subprocesses will run under the `postfix`
-account which will use `UID:GID` of `100:101`. `opendkim` will run under account `102:103`.
+and `opendkim` accounts.
+
+### UIDs/GIDs numbers
+
+While I cannot guarantee IDs (they are auto-generated by package manages), they tend to be fairly consistent across 
+**specific distribution**. Please be aware of this if you are switching images from Alpine to Debian to Ubuntu or
+back.
+
+At the last check, images had the following UIDs/GIDs:
+
+| Service    | Debian (`UID/GID`) | Ubuntu (`UID/GID`) | Alpine (`UID/GID`) |
+|------------|--------------------|--------------------|--------------------|
+| `postfix`  | `100:102`          | `101:102`          | `100:101`          |
+| `opendkim` | `101:104`          | `102:104`          | `102:103`          |
+
+Please check the notification information on startup.
 
 ## Quick how-tos
 
@@ -738,10 +754,16 @@ There's no need to configure DKIM or SPF, as Gmail will add these headers automa
 
 If your application runs in Amazon Elastic Compute Cloud (Amazon EC2), you can use Amazon SES to send up to 62,000 emails
 every month at no additional charge. You'll need an AWS account and SMTP credentials. The SMTP settings are available
-on the SES page. For example, for `eu-central-1`:
+on the SES page. 
 
-* see the [SES page for details](https://eu-central-1.console.aws.amazon.com/ses/home?region=eu-central-1#smtp-settings),
-* [create the user credentials](https://console.aws.amazon.com/iam/home?#s=SESHomeV4/eu-central-1)
+For example, for `eu-central-1`:
+
+- Please See the [SES Page for Details](https://eu-central-1.console.aws.amazon.com/ses/home?region=eu-central-1#smtp)
+
+You need Amazon SES SMTP credentials to access the SES SMTP interface.
+**NOTE:** Your SMTP password is different from your AWS secret access key.  Additionally, the credentials that you use to send email through the SES SMTP interface are unique to each _AWS Region_. If you use the SES SMTP interface to send email in more than one Region, you must generate a set of SMTP credentials for each Region that you plan to use.
+
+- [Create or Obtain the User Credentials](https://docs.aws.amazon.com/ses/latest/dg/smtp-credentials.html)
 
 **Make sure you write the user credentials down, as you will only see them once.**
 
@@ -749,7 +771,7 @@ By default, messages that you send through Amazon SES use a subdomain of `amazon
 [Amazon's documentation](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/mail-from.html) on how the domain can
 be configured.
 
-Your configuration would be as follows (example data):
+Your configuration would be as follows (example data, these key *will not work*):
 
 ```shell script
 RELAYHOST=email-smtp.eu-central-1.amazonaws.com:587
@@ -764,10 +786,10 @@ You will need to configure DKIM and SPF for your domain as well.
 
 If you're sending messages directly, you'll need to:
 
-* have a fixed IP address;
-* configure a reverse PTR record;
-* configure SPF and/or DKIM as explained in this document;
-* it's also highly advisable to have your own IP block.
+- have a fixed IP address;
+- configure a reverse PTR record;
+- configure SPF and/or DKIM as explained in this document;
+- it's also highly advisable to have your own IP block.
 
 Your configuration would be as follows:
 
@@ -779,14 +801,14 @@ ALLOWED_SENDER_DOMAINS=<your-domain>
 
 Getting all of this to work properly is not a small feat:
 
-* Hosting providers will regularly block outgoing connections to port 25. On AWS, for example you can
+- Hosting providers will regularly block outgoing connections to port 25. On AWS, for example you can
   [fill out a form](https://aws.amazon.com/premiumsupport/knowledge-center/ec2-port-25-throttle/) and request for
   port 25 to be unblocked.
-* You'll most likely need to at least [set up SPF records](https://en.wikipedia.org/wiki/Sender_Policy_Framework) or
+- You'll most likely need to at least [set up SPF records](https://en.wikipedia.org/wiki/Sender_Policy_Framework) or
   [DKIM](https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail).
-* You'll need to set up [PTR](https://en.wikipedia.org/wiki/Reverse_DNS_lookup) records to prevent your emails going
+- You'll need to set up [PTR](https://en.wikipedia.org/wiki/Reverse_DNS_lookup) records to prevent your emails going
   to spam.
-* Microsoft is especially notorious for trashing emails from new IPs directly into spam. If you're having trouble
+- Microsoft is especially notorious for trashing emails from new IPs directly into spam. If you're having trouble
   delivering emails to `outlook.com` domains, you will need to enroll in their
   [Smart Network Data Service](https://sendersupport.olc.protection.outlook.com/snds/) programme. And to do this you
   will need to *be the owner of the netblock you're sending the emails from*.
@@ -801,12 +823,12 @@ There are may other project offering similar functionality. The aim of this proj
 
 The other projects are, in completely random order:
 
-* [wader/postfix-relay](https://github.com/wader/postfix-relay)
-* [catatnight/postfix](https://github.com/catatnight/docker-postfix)
-* [juanluisbaptiste/docker-postfix](https://github.com/juanluisbaptiste/docker-postfix)
-* [docker-mail-relay](https://github.com/alterrebe/docker-mail-relay)
-* [applariat/kubernetes-postfix-relay-host](https://github.com/applariat/kubernetes-postfix-relay-host)
-* [eldada/postfix-relay-kubernetes](https://github.com/eldada/postfix-relay-kubernetes)
+- [wader/postfix-relay](https://github.com/wader/postfix-relay)
+- [catatnight/postfix](https://github.com/catatnight/docker-postfix)
+- [juanluisbaptiste/docker-postfix](https://github.com/juanluisbaptiste/docker-postfix)
+- [docker-mail-relay](https://github.com/alterrebe/docker-mail-relay)
+- [applariat/kubernetes-postfix-relay-host](https://github.com/applariat/kubernetes-postfix-relay-host)
+- [eldada/postfix-relay-kubernetes](https://github.com/eldada/postfix-relay-kubernetes)
 
 ## License check
 

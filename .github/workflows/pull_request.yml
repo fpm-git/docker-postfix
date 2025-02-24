@@ -52,7 +52,7 @@ jobs:
       - uses: ./.github/actions/buildx-setup
 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           #key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
@@ -62,10 +62,10 @@ jobs:
 
       - name: Fix issue with building Alpine # See https://gitlab.alpinelinux.org/alpine/aports/-/issues/12406
         run: |
-          update-binfmts --enable
+          if command -v update-binfmts; then update-binfmts --enable; fi
 
       - name: Build Alpine
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: false

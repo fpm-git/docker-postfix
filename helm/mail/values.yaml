@@ -39,7 +39,7 @@ metrics:
     annotations: {}
   port: 9154
   path: /metrics
-  image: 
+  image:
     repository: "boky/postfix-exporter"
     tag: "latest"
 
@@ -188,7 +188,7 @@ dns:
     # - 8.8.8.8
     # - 8.8.4.4
   searches: ""
-  # searches: 
+  # searches:
   # - "default.svc.cluster.local"
   # - "svc.cluster.local"
   # - "cluster.local"
@@ -209,13 +209,12 @@ readinessProbe:
   initialDelaySeconds: 10
   periodSeconds: 60
   failureThreshold: 6
+  timeoutSeconds: 8
   exec:
     command:
       - sh
       - -c
-      - >-
-        [ ! -f /tmp/container_is_terminating ] &&
-        printf "EHLO healthcheck\n" | nc 127.0.0.1 587 | grep -qE "^220.*ESMTP Postfix"
+      - /scripts/healthcheck.sh
 livenessProbe:
   initialDelaySeconds: 5
   periodSeconds: 5

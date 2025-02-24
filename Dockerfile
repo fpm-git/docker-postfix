@@ -1,7 +1,14 @@
-# syntax=docker/dockerfile:1.2
+# syntax=docker/dockerfile:1.6
 
+# Note:
+# The BASE_IMAGE can be changed for this docker image. In fact, it will be. Check .github/workflows/master.yml.
+# This image is automatically built with Debian, Ubuntu and Alpine as underlying systems. Each of these has its
+# own advantages and shortcomings. In essence:
+#
+# - use Alpine if you're strapped for space. But beware it uses MUSL LIBC, so unicode support might be an issue.
+# - use Debian if you're interested in the greatest cross-platform compatibility. It is larger than Alpine, though.
+# - use Ubuntu if, well, Ubuntu is your thing and you're used to the buntu ecosystem.
 ARG BASE_IMAGE=debian:bookworm-slim
-# ARG BASE_IMAGE=ubuntu:jammy
 
 FROM ${BASE_IMAGE} AS build-scripts
 COPY ./build-scripts ./build-scripts
@@ -13,8 +20,6 @@ ARG TARGETPLATFORM
 # Install supervisor, postfix
 # Install postfix first to get the first account (101)
 # Install opendkim second to get the second account (102)
-#           --mount=type=cache,target=/var/cache/apk,sharing=locked,id=var-cache-apk-$TARGETPLATFORM \
-#           --mount=type=cache,target=/etc/apk/cache,sharing=locked,id=etc-apk-cache-$TARGETPLATFORM \
 RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked,id=var-cache-apt-$TARGETPLATFORM \
            --mount=type=cache,target=/var/lib/apt,sharing=locked,id=var-lib-apt-$TARGETPLATFORM \
            --mount=type=tmpfs,target=/var/cache/apk \
@@ -27,7 +32,7 @@ FROM base AS sasl
 
 ARG TARGETPLATFORM
 ARG SASL_XOAUTH2_REPO_URL=https://github.com/tarickb/sasl-xoauth2.git
-ARG SASL_XOAUTH2_GIT_REF=release-0.24
+ARG SASL_XOAUTH2_GIT_REF=release-0.25
 
 #           --mount=type=cache,target=/var/cache/apk,sharing=locked,id=var-cache-apk-$TARGETPLATFORM \
 #           --mount=type=cache,target=/etc/apk/cache,sharing=locked,id=etc-apk-cache-$TARGETPLATFORM \
@@ -61,7 +66,7 @@ VOLUME     [ "/var/spool/postfix", "/etc/postfix", "/etc/opendkim/keys" ]
 USER       root
 WORKDIR    /tmp
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD printf "EHLO healthcheck\n" | nc 127.0.0.1 587 | grep -qE "^220.*ESMTP Postfix"
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --start-interval=2s --retries=3 CMD /scripts/healthcheck.sh
 
 EXPOSE     587
 CMD        [ "/bin/sh", "-c", "/scripts/run.sh" ]

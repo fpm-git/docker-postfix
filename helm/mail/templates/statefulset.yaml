@@ -158,6 +158,8 @@ spec:
             - "--postfix.showq_path"
             - {{ print "/var/spool/postfix/public/showq" | quote }}
           volumeMounts:
+            - name: tmp
+              mountPath: /tmp
             - name: {{ $fullName | quote }}
               mountPath: /var/spool/postfix
               subPath: spool
@@ -189,7 +191,9 @@ spec:
       dnsConfig: {{- toYaml (omit .Values.dns "policy") | nindent 8 }}
       {{- end }}
       volumes:
-            {{- if .Values.certs.create }}
+        - name: tmp
+          emptyDir: {}
+        {{- if .Values.certs.create }}
         - name: certs-init
           configMap:
             name: {{ $fullName }}
@@ -232,7 +236,9 @@ spec:
         {{- if .Values.extraVolumes }}{{- toYaml .Values.extraVolumes | nindent 8 }}{{ end }}
   {{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
   volumeClaimTemplates:
-    - metadata:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
         name: {{ $fullName }}
         namespace: {{ .Release.Namespace }}
       spec:

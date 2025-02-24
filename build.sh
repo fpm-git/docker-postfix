@@ -41,5 +41,6 @@ fi
 #    arg_list="$arg_list --platform linux/amd64,linux/arm64,linux/arm/v7"
 #fi
 
-docker buildx build ${arg_list} $* .
+set -x
+exec docker buildx build ${arg_list} $* .
 

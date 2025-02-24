@@ -1,0 +1,4 @@
+server_host = ldap://ldap
+search_base = dc=ldapmock,dc=local
+query_filter = (&(mail=%s)(sn=allowed))
+result_attribute = mail

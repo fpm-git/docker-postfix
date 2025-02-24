@@ -9,8 +9,10 @@ noop() {
 }
 
 if [ ! -d /etc/opendkim/keys ]; then
+    touch /tmp/no_open_dkim
     noop
 elif [ -z "$(find /etc/opendkim/keys -type f ! -name .)" ]; then
+    touch /tmp/no_open_dkim
     noop
 else
     exec /usr/sbin/opendkim -D -f -x /etc/opendkim/opendkim.conf

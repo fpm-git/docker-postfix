@@ -1,4 +1,5 @@
-ARG ALPINE_VERSION=latest
+# Changed this to specific alpine version so it doesn't get refreshed / pulled from Docker hub every time.
+ARG ALPINE_VERSION=3.19
 FROM alpine:${ALPINE_VERSION} as build
 
 ARG SASL_XOAUTH2_REPO_URL=https://github.com/tarickb/sasl-xoauth2.git

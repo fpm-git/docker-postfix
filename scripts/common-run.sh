@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 announce_startup() (
+	local postfix_account opendkim_account
+
 	DISTRO="unknown"
 	[ -f /etc/lsb-release ] && . /etc/lsb-release
 	[ -f /etc/os-release ] && . /etc/os-release
@@ -10,11 +12,16 @@ announce_startup() (
 		DISTRO="${ID}"
 	fi
 	echo -e "${gray}${emphasis}★★★★★ ${reset}${lightblue}POSTFIX STARTING UP${reset} ${gray}(${reset}${emphasis}${DISTRO}${reset}${gray})${emphasis} ★★★★★${reset}"
+
+	postfix_account="$(cat /etc/passwd | grep -E "^postfix" | cut -f3-4 -d:)"
+	opendkim_account="$(cat /etc/passwd | grep -E "^opendkim" | cut -f3-4 -d:)"
+
+	notice "System accounts: ${emphasis}postfix${reset}=${orange_emphasis}${postfix_account}${reset}, ${emphasis}opendkim${reset}=${orange_emphasis}${opendkim_account}${reset}. Careful when switching distros."
 )
 
 setup_timezone() {
 	if [[ ! -z "$TZ" ]]; then
-		TZ_FILE="/usr/share/zoneinfo/$TZ"
+		TZ_FILE="$(zone_info_dir)/$TZ"
 		if [ -f "$TZ_FILE" ]; then
 			notice "Setting container timezone to: ${emphasis}$TZ${reset}"
 			ln -snf "$TZ_FILE" /etc/localtime
@@ -27,6 +34,17 @@ setup_timezone() {
 	fi
 }
 
+check_environment_sane() (
+	if touch /tmp/test; then
+		debug "/tmp writable."
+		rm /tmp/test
+	else
+		error "Could not write to /tmp. Please mount it to an empty dir if the image is read-only."
+		exit
+	fi
+
+)
+
 rsyslog_log_format() {
 	local log_format="${LOG_FORMAT}"
 	if [[ -z "${log_format}" ]]; then
@@ -34,6 +52,13 @@ rsyslog_log_format() {
 	fi
 	info "Using ${emphasis}${log_format}${reset} log format for rsyslog."
 	sed -i -E "s/<log-format>/${log_format}/" /etc/rsyslog.conf
+}
+
+logrotate_remove_duplicate_mail_log() {
+	if egrep -q '^/var/log/mail.log' /etc/logrotate.d/logrotate.conf; then
+		info "Removing /var/log/mail.log from /etc/logrotate.d/rsyslog"
+		sed -i -E '/^\/var\/log\/mail.log/d' /etc/logrotate.d/rsyslog
+	fi
 }
 
 anon_email_log() {
@@ -127,15 +152,22 @@ postfix_enable_chroot() {
 	if [[ -z "${POSTFIXD_ETC}" ]]; then
 		POSTFIXD_ETC="${POSTFIXD_DIR}/etc"
 	fi
+
+	local zoneinfo="$(zone_info_dir)"
 	if [[ -z "${POSTFIX_ZIF}" ]]; then
-		POSTFIXD_ZIF="${POSTFIXD_DIR}/usr/lib/zoneinfo"
+		POSTFIXD_ZIF="${POSTFIXD_DIR}${zoneinfo}"
 	fi
 	(
 		umask 022
-		[[ -d "$POSTFIXD_DIR" ]]    && mkdir -pv                  $POSTFIXD_DIR  || true
-		[[ -d "$POSTFIXD_ETC" ]]    && mkdir -pv                  $POSTFIXD_ETC  || true
-		[[ -d "$POSTFIXD_ZIF" ]]    && mkdir -pv                  $POSTFIXD_ZIF  || true
-		[[ -e /etc/localtime ]]     && ln -fsv /etc/localtime     $POSTFIXD_ZIF/ || true
+		[[ ! -d "$POSTFIXD_ZIF" ]]  && mkdir -pv                  $POSTFIXD_ZIF  || true
+		[[ ! -d "$POSTFIXD_DIR" ]]  && mkdir -pv                  $POSTFIXD_DIR  || true
+		[[ ! -d "$POSTFIXD_ETC" ]]  && mkdir -pv                  $POSTFIXD_ETC  || true
+		if [[ -h /etc/localtime ]]; then
+			# Assume it links to ZoneInfo or something that is accessible from chroot
+			echo "Copying ${zoneinfo} -> ${POSTFIXD_ZIF}"
+			cp -fPpr ${zoneinfo}/* ${POSTFIXD_ZIF}/
+			cp -fPpv /etc/localtime "$POSTFIXD_ETC/"
+		fi
 		[[ -e /etc/localtime ]]     && cp -fpv /etc/localtime     $POSTFIXD_ETC  || true
 		[[ -e /etc/nsswitch.conf ]] && cp -fpv /etc/nsswitch.conf $POSTFIXD_ETC  || true
 		[[ -e /etc/resolv.conf ]]   && cp -fpv /etc/resolv.conf   $POSTFIXD_ETC  || true
@@ -226,7 +258,7 @@ postfix_disable_utf8() {
 	if [[ -f /etc/alpine-release ]] && [[ "${smtputf8_enable}" == "yes" ]]; then
 		debug "Running on Alpine. Setting ${emphasis}smtputf8_enable${reset}=${emphasis}no${reset}, as Alpine does not have proper libraries to handle UTF-8"
 		do_postconf -e smtputf8_enable=no
-	elif [[ "${smtputf8_enable}" == "no" ]]; then
+	elif [[ ! -f /etc/alpine-release ]] && [[ "${smtputf8_enable}" == "no" ]]; then
 		debug "Running on non-Alpine system. Setting ${emphasis}smtputf8_enable${reset}=${emphasis}yes${reset}."
 		do_postconf -e smtputf8_enable=yes
 	fi
@@ -388,7 +420,7 @@ postfix_setup_xoauth2_post_setup() {
 		do_postconf -e 'smtp_tls_session_cache_database=lmdb:${data_directory}/smtp_scache'
 	else
 		# So, this fix should solve the issue #106, when password in the 'smtp_sasl_password_maps' was
-		# read as file instead of the actual password. It turns out that  the culprit is the sasl-xoauth2
+		# read as file instead of the actual password. It turns out that the culprit is the sasl-xoauth2
 		# plugin, which expect the filename in place of the password. And as the plugin injects itself
 		# automatically in the list of SASL login mechanisms, it tries to read the password as a file and --
 		# naturally -- fails.
@@ -400,12 +432,14 @@ postfix_setup_xoauth2_post_setup() {
 			# Ubuntu/Debian have renamed pluginviewer to saslpluginviewer so this fails with those distros.
 			plugin_viewer="saslpluginviewer"
 		fi
-		other_plugins="$(${plugin_viewer} -c | grep Plugin | cut -d\  -f2 | cut -c2- | rev | cut -c2- | rev | grep -v EXTERNAL | grep -v sasl-xoauth2 | tr '\n' ',' | rev | cut -c2- | rev)"
+		other_plugins="$(${plugin_viewer} -c | grep Plugin | cut -d\  -f2 | cut -c2- | rev | cut -c2- | rev | grep -v EXTERNAL | grep -v sasl-xoauth2 | tr '\n' ',' | rev | cut -c2- | rev | convert_plugin_names_to_filter_names)"
 		do_postconf -e "smtp_sasl_mechanism_filter=${other_plugins}"
 	fi
 }
 
 postfix_setup_smtpd_sasl_auth() {
+	local first_bad_user bad_users mydomain message
+	local _user _pwd
 	if [ ! -z "$SMTPD_SASL_USERS" ]; then
 		info "Enable smtpd sasl auth."
 		do_postconf -e "smtpd_sasl_auth_enable=yes"
@@ -417,19 +451,42 @@ pwcheck_method: auxprop
 auxprop_plugin: sasldb
 mech_list: PLAIN LOGIN CRAM-MD5 DIGEST-MD5 NTLM
 EOF
-		[ ! -d /etc/sasl2 ] && mkdir /etc/sasl2
-		ln -s /etc/postfix/sasl/smtpd.conf /etc/sasl2/
+		[[ ! -d /etc/sasl2 ]] && mkdir /etc/sasl2
+		ln -s -f /etc/postfix/sasl/smtpd.conf /etc/sasl2/
 
+		bad_users=""
+		mydomain="$(postconf -h mydomain)"
 		# sasldb2
 		echo $SMTPD_SASL_USERS | tr , \\n > /tmp/passwd
 		while IFS=':' read -r _user _pwd; do
-			echo $_pwd | saslpasswd2 -p -c $_user
+			# Fix for issue https://github.com/bokysan/docker-postfix/issues/192
+			if [[ "$_user" = *@* ]]; then
+				echo $_pwd | saslpasswd2 -p -c $_user
+			else
+				if [[ -z "$bad_users" ]]; then
+					bad_users="${emphasis}${_user}${reset}"
+					first_bad_user="${_user}"
+				else
+					bad_users="${bad_users},${emphasis}${_user}${reset}"
+				fi
+				echo $_pwd | saslpasswd2 -p -c -u $mydomain $_user
+			fi
 		done < /tmp/passwd
 
 		rm -f /tmp/passwd
 
-		[ -f /etc/sasldb2 ] && chown postfix:postfix /etc/sasldb2
-		[ -f /etc/sasl2/sasldb2 ] && chown postfix:postfix /etc/sasl2/sasldb2
+		[[ -f /etc/sasldb2 ]] && chown postfix:postfix /etc/sasldb2
+		[[ -f /etc/sasl2/sasldb2 ]] && chown postfix:postfix /etc/sasl2/sasldb2
+
+		if [[ -n "$bad_users" ]]; then
+			notice "$(printf '%s' \
+				"Some SASL users (${bad_users}) were specified without the domain. Container domain (${emphasis}${mydomain}${reset}) was automatically applied. " \
+				"If this was an intended behavour, you can safely ignore this message. To prevent the message in the future, specify your usernames with domain " \
+				"name, e.g. ${emphasis}${first_bad_user}@${mydomain}:<pass>${reset}. For more info, see https://github.com/bokysan/docker-postfix/issues/192"			
+			)"
+		fi
+
+		debug 'Sasldb configured'
 	fi
 }
 

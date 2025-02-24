@@ -51,8 +51,6 @@ jobs:
           tags: |
             boky/postfix-exporter:latest
             boky/postfix-exporter:edge
-          # boky/postfix-exporter:${{ env.RELEASE_VERSION }}
-          # boky/postfix-exporter:${{ env.RELEASE_VERSION_NO_v }}
 
   Build_Alpine:
     runs-on: ubuntu-latest
@@ -76,7 +74,7 @@ jobs:
           DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           #key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
@@ -86,10 +84,10 @@ jobs:
 
       - name: Fix issue with building Alpine # See https://gitlab.alpinelinux.org/alpine/aports/-/issues/12406
         run: |
-          update-binfmts --enable
+          if command -v update-binfmts; then update-binfmts --enable; fi
 
       - name: Build and push Alpine
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
@@ -132,7 +130,7 @@ jobs:
           DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           #key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
@@ -141,7 +139,7 @@ jobs:
             ${{ runner.os }}-ubuntu-
 
       - name: Build and push Ubuntu
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
@@ -153,7 +151,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache/ubuntu,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/ubuntu
           build-args: |
-            BASE_IMAGE=ubuntu:jammy
+            BASE_IMAGE=ubuntu:noble
 
       - name: Move cache
         run: |
@@ -182,7 +180,7 @@ jobs:
           DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           #key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
@@ -191,7 +189,7 @@ jobs:
             ${{ runner.os }}-debian-
 
       - name: Build and push Debian
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
@@ -256,22 +254,22 @@ jobs:
       # See more here: https://artifacthub.io/docs/topics/annotations/helm/#supported-annotations
 
       - name: Package helm chart with vX.Y.Z
-        uses: WyriHaximus/github-action-helm3@v3
+        uses: WyriHaximus/github-action-helm3@v4
         with:
           exec: helm package --app-version $RELEASE_VERSION --version "${RELEASE_VERSION}" --destination ./gh-pages helm/mail
 
       - name: Package helm chart with X.Y.Z
-        uses: WyriHaximus/github-action-helm3@v3
+        uses: WyriHaximus/github-action-helm3@v4
         with:
           exec: helm package --app-version "${RELEASE_VERSION_NO_v}" --version "${RELEASE_VERSION_NO_v}" --destination ./gh-pages helm/mail
 
       - name: Create helm chart index
-        uses: WyriHaximus/github-action-helm3@v3
+        uses: WyriHaximus/github-action-helm3@v4
         with:
           exec: cd gh-pages && rm -rf .git && helm repo index . --url https://bokysan.github.io/docker-postfix
 
       - name: Upload gh-pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./gh-pages

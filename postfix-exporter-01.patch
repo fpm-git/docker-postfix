@@ -36,3 +36,4 @@ index a3327d8..1cdfa84 100644
  EXPOSE 9154
  WORKDIR /
  COPY --from=builder /bin/postfix_exporter /bin/
+ 

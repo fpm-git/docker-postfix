@@ -11,6 +11,11 @@ if command -v gfind > /dev/null 2>&1; then
     FIND="$(which gfind)"
 fi
 
+DOCKER_COMPOSE="docker-compose"
+if docker --help | grep -q -F 'compose*'; then
+    DOCKER_COMPOSE="docker compose"
+fi
+
 run_test() {
     local exit_code
     echo
@@ -20,10 +25,10 @@ run_test() {
     (
         cd "$1"
         set +e
-        docker-compose up --build --abort-on-container-exit --exit-code-from tests
+        $DOCKER_COMPOSE up --build --abort-on-container-exit --exit-code-from tests
         exit_code="$?"
 
-        docker-compose down -v
+        $DOCKER_COMPOSE down -v
         if [[ "$exit_code" != 0 ]]; then
             exit "$exit_code"
         fi

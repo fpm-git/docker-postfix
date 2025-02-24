@@ -71,7 +71,7 @@ jobs:
           DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           #key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
@@ -81,10 +81,10 @@ jobs:
 
       - name: Fix issue with building Alpine # See https://gitlab.alpinelinux.org/alpine/aports/-/issues/12406
         run: |
-          update-binfmts --enable
+          if command -v update-binfmts; then update-binfmts --enable; fi
 
       - name: Build and push Alpine
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
@@ -93,7 +93,18 @@ jobs:
             boky/postfix:edge-alpine
           # linux/s390x: "rsyslog (no such package)"
           # Latest Alpine does not have all the packages for 386 anymore. :-(
-          platforms: "linux/arm/v6,linux/arm/v7,linux/ppc64le,linux/amd64,linux/arm64"
+          # Notice: linux/ppc64le (temporarily) removed, as building the SASL library crashes with:
+          # [ 55%] Building CXX object src/CMakeFiles/sasl-xoauth2-static.dir/http.cc.o
+          # [ 61%] Building CXX object src/CMakeFiles/sasl-xoauth2-static.dir/log.cc.o
+          # [ 66%] Building CXX object src/CMakeFiles/sasl-xoauth2-static.dir/module.cc.o
+          # [ 72%] Building CXX object src/CMakeFiles/sasl-xoauth2-static.dir/token_store.cc.o
+          # c++: internal compiler error: Segmentation fault signal terminated program cc1plus
+          # Please submit a full bug report, with preprocessed source (by using -freport-bug).
+          # See <https://gitlab.alpinelinux.org/alpine/aports/-/issues> for instructions.
+          # make[2]: *** [src/CMakeFiles/sasl-xoauth2-static.dir/build.make:149: src/CMakeFiles/sasl-xoauth2-static.dir/token_store.cc.o] Error 4
+          # make[1]: *** [CMakeFiles/Makefile2:169: src/CMakeFiles/sasl-xoauth2-static.dir/all] Error 2
+          # make: *** [Makefile:166: all] Error 2
+          platforms: "linux/arm/v6,linux/arm/v7,linux/amd64,linux/arm64"
           cache-from: type=local,src=/tmp/.buildx-cache/alpine,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/alpine
           build-args: |
@@ -123,7 +134,7 @@ jobs:
           DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           #key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
@@ -132,16 +143,27 @@ jobs:
             ${{ runner.os }}-ubuntu-
 
       - name: Build and push Ubuntu
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: boky/postfix:edge-ubuntu
-          platforms: "linux/arm/v7,linux/amd64,linux/arm64,linux/ppc64le,linux/s390x"
+          # Notice: linux/ppc64le (temporarily) removed, as building the SASL library crashes with:
+          # [ 55%] Building CXX object src/CMakeFiles/sasl-xoauth2-static.dir/http.cc.o
+          # [ 61%] Building CXX object src/CMakeFiles/sasl-xoauth2-static.dir/log.cc.o
+          # [ 66%] Building CXX object src/CMakeFiles/sasl-xoauth2-static.dir/module.cc.o
+          # [ 72%] Building CXX object src/CMakeFiles/sasl-xoauth2-static.dir/token_store.cc.o
+          # c++: internal compiler error: Segmentation fault signal terminated program cc1plus
+          # Please submit a full bug report, with preprocessed source (by using -freport-bug).
+          # See <https://gitlab.alpinelinux.org/alpine/aports/-/issues> for instructions.
+          # make[2]: *** [src/CMakeFiles/sasl-xoauth2-static.dir/build.make:149: src/CMakeFiles/sasl-xoauth2-static.dir/token_store.cc.o] Error 4
+          # make[1]: *** [CMakeFiles/Makefile2:169: src/CMakeFiles/sasl-xoauth2-static.dir/all] Error 2
+          # make: *** [Makefile:166: all] Error 2
+          platforms: "linux/arm/v7,linux/amd64,linux/arm64,linux/s390x"
           cache-from: type=local,src=/tmp/.buildx-cache/ubuntu,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/ubuntu
           build-args: |
-            BASE_IMAGE=ubuntu:jammy
+            BASE_IMAGE=ubuntu:noble
 
       - name: Move cache
         run: |
@@ -167,7 +189,7 @@ jobs:
           DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           #key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
@@ -176,12 +198,23 @@ jobs:
             ${{ runner.os }}-debian-
 
       - name: Build and push Debian
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: boky/postfix:edge-debian
-          platforms: "linux/386,linux/arm/v5,linux/arm/v7,linux/arm64/v8,linux/amd64,linux/arm64,linux/mips64le,linux/ppc64le,linux/s390x"
+          # Notice: linux/ppc64le (temporarily) removed, as building the SASL library crashes with:
+          # [ 55%] Building CXX object src/CMakeFiles/sasl-xoauth2-static.dir/http.cc.o
+          # [ 61%] Building CXX object src/CMakeFiles/sasl-xoauth2-static.dir/log.cc.o
+          # [ 66%] Building CXX object src/CMakeFiles/sasl-xoauth2-static.dir/module.cc.o
+          # [ 72%] Building CXX object src/CMakeFiles/sasl-xoauth2-static.dir/token_store.cc.o
+          # c++: internal compiler error: Segmentation fault signal terminated program cc1plus
+          # Please submit a full bug report, with preprocessed source (by using -freport-bug).
+          # See <https://gitlab.alpinelinux.org/alpine/aports/-/issues> for instructions.
+          # make[2]: *** [src/CMakeFiles/sasl-xoauth2-static.dir/build.make:149: src/CMakeFiles/sasl-xoauth2-static.dir/token_store.cc.o] Error 4
+          # make[1]: *** [CMakeFiles/Makefile2:169: src/CMakeFiles/sasl-xoauth2-static.dir/all] Error 2
+          # make: *** [Makefile:166: all] Error 2
+          platforms: "linux/386,linux/arm/v5,linux/arm/v7,linux/arm64/v8,linux/amd64,linux/arm64,linux/mips64le,linux/s390x"
           cache-from: type=local,src=/tmp/.buildx-cache/debian,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/debian
           build-args: |

@@ -9,6 +9,10 @@ inputs:
     description: 'Docker image tags'
     required: true
 
+env:
+  DOCKERHUB_REPO: boky/postfix-exporter
+  #GHCR_REPO: ghcr.io/bokysan/postfix-exporter
+
 runs:
   using: "composite"
   steps:
@@ -33,8 +37,24 @@ runs:
       with:
         DOCKER_ACCESS_TOKEN: '${{ inputs.DOCKER_ACCESS_TOKEN }}'
 
+    # GitHub container registry login
+    #- name: Login to GHCR
+    #  uses: docker/login-action@v3
+    #  with:
+    #    registry: ghcr.io
+    #    username: ${{ github.repository_owner }}
+    #    password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: |
+          ${{ env.DOCKERHUB_REPO }}
+#          ${{ env.GHCR_REPO }}
+
     - name: Cache Docker layers
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: /tmp/.buildx-cache
         key: ${{ runner.os }}-postfix-exporter-${{ github.sha }}
@@ -42,13 +62,14 @@ runs:
           ${{ runner.os }}-postfix-exporter-
 
     - name: Build and push
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: postfix_exporter
         push: true
         tags: '${{ inputs.tags }}'
-        platforms: "linux/amd64,linux/arm/v5,linux/arm/v7,linux/arm64/v8,linux/mips64le,linux/ppc64le,linux/s390x"
-        # linux/386,linux/arm/v6,linux/arm64,linux/riscv64"
+        labels: ${{ steps.meta.outputs.labels }}
+        platforms: "linux/amd64,linux/arm/v5,linux/arm/v7,linux/arm64/v8,linux/mips64le"
+        #platforms: "linux/amd64,linux/arm/v5,linux/arm/v7,linux/arm64/v8,linux/mips64le,linux/ppc64le,linux/s390x"
         cache-from: type=local,src=/tmp/.buildx-cache/postfix-exporter,mode=max,compression=estargz
         cache-to: type=local,dest=/tmp/.buildx-cache-new/postfix-exporter
 

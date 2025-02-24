@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 set -e
 
+reset="$(printf '\033[0m')"
+green="$(printf '\033[38;5;46m')"
+yellow="$(printf '\033[38;5;178m')"
+orange="$(printf '\033[38;5;208m')"
+orange_emphasis="$(printf '\033[38;5;220m')"
+lightblue="$(printf '\033[38;5;147m')"
+red="$(printf '\033[91m')"
+gray="$(printf '\033[38;5;245m')"
+emphasis="$(printf '\033[38;5;111m')"
+underline="$(printf '\033[4m')"
+
 SCRIPT_DIR="$( pwd; )/$( dirname -- $0; )"
 cd "${SCRIPT_DIR}"
 FIND="find"
@@ -12,16 +23,22 @@ if command -v gfind >/dev/null 2>&2; then
 fi
 
 do_the_test() {
-    local i="${1}"
-    echo "☆☆☆☆☆☆☆☆☆☆ $i ☆☆☆☆☆☆☆☆☆☆"
-    helm template -f $i --dry-run mail > fixtures/demo.yaml
-    docker run \
-        -v "${SCRIPT_DIR}/fixtures:/fixtures" \
-        -v "${SCRIPT_DIR}/schemas:/schemas" \
-        garethr/kubeval \
-            --force-color \
-            --additional-schema-locations file:///schemas \
-            fixtures/demo.yaml
+    local i="${1}" v
+    printf '%s' "${gray}☆☆☆☆☆☆☆☆☆☆${reset} ${orange_emphasis}$i${reset}: ${gray}☆☆☆☆☆☆☆☆☆☆${reset}"
+    echo
+    for v in 1.22.9 1.29.4; do
+        printf '%s' "${emphasis}${lightblue}k8s v${v}${reset}${lightblue}... ${reset}"
+        helm template -f "${i}" --kube-version "${v}" --dry-run mail > fixtures/demo.yaml
+        docker run \
+            -v "${SCRIPT_DIR}/fixtures:/fixtures" \
+            -v "${SCRIPT_DIR}/schemas:/schemas" \
+            ghcr.io/yannh/kubeconform:latest-alpine \
+                -summary -debug -kubernetes-version "${v}" \
+                -cache "./schemas/cached" \
+                -schema-location "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/{{ .NormalizedKubernetesVersion }}-standalone{{ .StrictSuffix }}/{{ .ResourceKind }}{{ .KindSuffix }}.json" \
+                -schema-location "./schemas/master-standalone/{{ .ResourceKind }}{{ .KindSuffix }}.json" \
+                fixtures/demo.yaml
+    done
 }
 
 
