@@ -9,5 +9,5 @@ SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
 # are sent straight to the terminal
 ##
 while ! env PYTHONUNBUFFERED=1 python3 "$SCRIPT_DIR/email-anonymizer.py" "$@"; do
-    sleep 1
+	sleep 1
 done

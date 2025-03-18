@@ -2,27 +2,41 @@
 set -e
 
 if [ -f /etc/os-release ]; then
-    . /etc/os-release
+	. /etc/os-release
 fi
 
 # Installs postfix, opendkim, and other required packages using the
 # Alpine package manager. This function is called when the image is
 # built on an Alpine base image.
 do_alpine() {
-    architecture_specific_packages=""
-    apk update
+	architecture_specific_packages=""
+	apk update
 
-    if [ "$(apk info postfix-pgsql | grep -R '^postfix-pgsql')" != "" ]; then
-        architecture_specific_packages="${architecture_specific_packages} postfix-pgsql"
-    fi
-    if [ "$(apk info postfix-mysql | grep -R '^postfix-mysql')" != "" ]; then
-        architecture_specific_packages="${architecture_specific_packages} postfix-mysql"
-    fi
+	if [ "$(apk info postfix-pgsql | grep -R '^postfix-pgsql')" != "" ]; then
+		architecture_specific_packages="${architecture_specific_packages} postfix-pgsql"
+	fi
+	if [ "$(apk info postfix-mysql | grep -R '^postfix-mysql')" != "" ]; then
+		architecture_specific_packages="${architecture_specific_packages} postfix-mysql"
+	fi
 
-    apk add --upgrade cyrus-sasl cyrus-sasl-static cyrus-sasl-digestmd5 cyrus-sasl-crammd5 cyrus-sasl-login cyrus-sasl-ntlm libsasl
-    apk add postfix postfix-pcre postfix-ldap ${architecture_specific_packages}
-    apk add opendkim
-    apk add --upgrade ca-certificates tzdata supervisor rsyslog musl musl-utils bash opendkim-utils libcurl jsoncpp lmdb logrotate netcat-openbsd
+	apk add --upgrade cyrus-sasl cyrus-sasl-static cyrus-sasl-digestmd5 cyrus-sasl-crammd5 cyrus-sasl-login cyrus-sasl-ntlm libsasl
+	apk add postfix postfix-pcre postfix-ldap ${architecture_specific_packages}
+	apk add opendkim
+	apk add --upgrade \
+		bash \
+		bind-tools \
+		ca-certificates \
+		jsoncpp \
+		libcurl \
+		lmdb \
+		logrotate \
+		musl \
+		musl-utils \
+		netcat-openbsd \
+		opendkim-utils \
+		rsyslog \
+		supervisor \
+		tzdata
 }
 
 
@@ -30,36 +44,54 @@ do_alpine() {
 # ubuntu/debian package manager. This function is called when the
 # image is built on a ubuntu/debian base image.
 do_ubuntu() {
-    architecture_specific_packages=""
-    RELEASE_SPECIFIC_PACKAGES=""
-    export DEBCONF_NOWARNINGS=yes
-    export DEBIAN_FRONTEND=noninteractive
-    echo "Europe/Berlin" > /etc/timezone
-    apt-get update -y -q
-    
-    if [ "$(apt-cache search --names-only '^postfix-pgsql$')" != "" ]; then
-        architecture_specific_packages="${architecture_specific_packages} postfix-pgsql"
-    fi
-    if [ "$(apt-cache search --names-only '^postfix-mysql$')" != "" ]; then
-        architecture_specific_packages="${architecture_specific_packages} postfix-mysql"
-    fi
+	architecture_specific_packages=""
+	RELEASE_SPECIFIC_PACKAGES=""
+	export DEBCONF_NOWARNINGS=yes
+	export DEBIAN_FRONTEND=noninteractive
+	echo "Europe/Berlin" > /etc/timezone
+	apt-get update -y -q
 
-    apt-get install -y libsasl2-modules sasl2-bin
-    apt-get install -y postfix postfix-pcre postfix-ldap ${architecture_specific_packages}
-    apt-get install -y opendkim
-    local libcurl="libcurl4"
-    if [ "$(apt-cache search --names-only '^libcurl4t64$')" != "" ]; then
-        libcurl="libcurl4t64"
-    fi
-    apt-get install -y ca-certificates tzdata supervisor rsyslog bash opendkim-tools curl ${libcurl} libjsoncpp25 sasl2-bin postfix-lmdb procps logrotate cron net-tools colorized-logs netcat-openbsd ${RELEASE_SPECIFIC_PACKAGES}
-    apt-get clean
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*    
+	if [ "$(apt-cache search --names-only '^postfix-pgsql$')" != "" ]; then
+		architecture_specific_packages="${architecture_specific_packages} postfix-pgsql"
+	fi
+	if [ "$(apt-cache search --names-only '^postfix-mysql$')" != "" ]; then
+		architecture_specific_packages="${architecture_specific_packages} postfix-mysql"
+	fi
+
+	apt-get install -y libsasl2-modules sasl2-bin
+	apt-get install -y postfix postfix-pcre postfix-ldap ${architecture_specific_packages}
+	apt-get install -y opendkim
+	local libcurl="libcurl4"
+	if [ "$(apt-cache search --names-only '^libcurl4t64$')" != "" ]; then
+		libcurl="libcurl4t64"
+	fi
+	apt-get install -y \
+		${libcurl} ${RELEASE_SPECIFIC_PACKAGES} \
+		bash \
+		ca-certificates \
+		colorized-logs \
+		cron \
+		curl \
+		dnsutils \
+		libjsoncpp25 \
+		logrotate \
+		net-tools \
+		netcat-openbsd \
+		opendkim-tools \
+		postfix-lmdb \
+		procps \
+		rsyslog \
+		sasl2-bin \
+		supervisor \
+		tzdata
+	apt-get clean
+	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 }
 
 if [ -f /etc/alpine-release ]; then
-    do_alpine
+	do_alpine
 else
-    do_ubuntu
+	do_ubuntu
 fi
 
 # Some services (eg. cron) will complain if this file does not exists, even if it's empty.

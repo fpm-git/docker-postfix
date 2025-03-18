@@ -2,7 +2,7 @@
 
 """
 
-Filter to anonyimize email addresses. It reads input line by line,
+Filter to anonymize email addresses. It reads input line by line,
 finds all emails in the input and masks them using given filter.
 
 Big thanks to [Sergio Del Río Mayoral](https://github.com/sdelrio)
@@ -26,8 +26,8 @@ logger = logging.getLogger(__name__)
 # BIG FAT NOTICE on emails and regular expressions:
 # If you're planning on using a regular expression to validate an email: don't. Emails
 # are much more complex than you would imagine and most regular expressions will not
-# cover all usecases. Newer RFCs even allow for international (read: UTF-8) email addresses.
-# Most of your favourite programming languages will have a dedicated library for validating
+# cover all use cases. Newer RFCs even allow for international (read: UTF-8) email addresses.
+# Most of your favorite programming languages will have a dedicated library for validating
 # addresses.
 #
 # This pattern below, should, however match anything that remotely looks like an email.
@@ -85,7 +85,7 @@ class Filter():
         start = match.start()
         email = match.group()
 
-        # Note that our regex will match thigs like "message-id=Issue1649523226559@postfix-mail.mail-system.svc.cluster.local"
+        # Note that our regex will match things like "message-id=Issue1649523226559@postfix-mail.mail-system.svc.cluster.local"
         # so we need to filter / check for these first
 
         if email.startswith(self.MESSAGE_ID_LINE):
@@ -123,9 +123,9 @@ class Filter():
 """
 This filter will take an educated guess at how to best mask the emails, specifically:
 
-* It will leave the first and the last letter of the local part (if it's oly one letter, it will get repated)
+* It will leave the first and the last letter of the local part (if it's oly one letter, it will get repeated)
 * If the local part is in quotes, it will remove the quotes (Warning: if the email starts with a space, this might look weird in logs)
-* It will replace all the letters inbetween with **ONE** asterisk
+* It will replace all the letters in between with **ONE** asterisk
 * It will replace everything but a TLD with a star
 * Address-style domains will see the number replaced with stars
 

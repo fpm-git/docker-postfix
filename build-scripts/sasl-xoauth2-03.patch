@@ -1,0 +1,7 @@
+--- sasl-xoauth2-orig/scripts/sasl-xoauth2-tool.in	2025-03-01 08:38:07
++++ sasl-xoauth2/scripts/sasl-xoauth2-tool.in	2025-03-01 08:38:12
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/sasl/bin/python3
+ # PYTHON_ARGCOMPLETE_OK
+ # -*- coding: utf-8 -*-

@@ -228,8 +228,8 @@ postfix_upgrade_daemon_directory() {
 	local dir_alpine="/usr/libexec/postfix"  # Alpine
 
 
-	# Some people will keep the configuration of postfix on an external drive, although this is not strictly neccessary by this
-	# image. And when they switch between different distrubtions (Alpine -> Debian and vice versa), the image will fail with the
+	# Some people will keep the configuration of postfix on an external drive, although this is not strictly necessary by this
+	# image. And when they switch between different distributions (Alpine -> Debian and vice versa), the image will fail with the
 	# old configuration. This is a quick and dirty check to solve this issue so we don't get issues like these:
 	# https://github.com/bokysan/docker-postfix/issues/147
 	local daemon_directory="$(get_postconf "daemon_directory")"
@@ -299,7 +299,7 @@ postfix_reject_invalid_helos() {
 	do_postconf -e smtpd_delay_reject=yes
 	do_postconf -e smtpd_helo_required=yes
 	# Fast reject -- reject straight away when the client is connecting
-	do_postconf -e "smtpd_client_restrictions=permit_mynetworks,reject"
+	do_postconf -e "smtpd_client_restrictions=permit_mynetworks,permit_sasl_authenticated,reject"
 	# Reject / accept on EHLO / HELO command
 	do_postconf -e "smtpd_helo_restrictions=permit_mynetworks,reject_invalid_helo_hostname,permit"
 	# Delayed reject -- reject on MAIL FROM command. Not strictly neccessary to have both, but doesn't hurt
@@ -307,9 +307,22 @@ postfix_reject_invalid_helos() {
 }
 
 postfix_set_hostname() {
+    local ip
+    local hostname
 	do_postconf -# myhostname
+	if [[ -z "$POSTFIX_myhostname" ]] && [[ "${AUTOSET_HOSTNAME}" == "1" ]]; then
+		warn "Both ${emphasis}POSTFIX_myhostname${reset} and ${emphasis}AUTOSET_HOSTNAME${reset} are set. ${emphasis}POSTFIX_myhostname${reset} will take precedence and ${emphasis}AUTOSET_HOSTNAME${reset} will be ignored."
+	fi
+
 	if [[ -z "$POSTFIX_myhostname" ]]; then
 		POSTFIX_myhostname="${HOSTNAME}"
+	elif [[ "${AUTOSET_HOSTNAME}" == "1" ]]; then
+		ip=$(get_public_ip)
+		hostname=$(dig +short -x $IP)
+		# Remove the trailing dot
+		hostname="${hostname%.}"
+		notice "Automatically setting Postfix hostname to ${emphasis}${hostname}${reset} based on your public IP address ${emphasis}${ip}${reset}..."
+		POSTFIX_myhostname="${hostname}"
 	fi
 }
 

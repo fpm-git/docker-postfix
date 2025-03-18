@@ -32,7 +32,7 @@ postfix_setup_xoauth2_post_setup        # (Post) Setup XOAUTH2 authentication
 postfix_setup_networks                  # Set MYNETWORKS
 postfix_setup_debugging                 # Enable debugging, if defined
 postfix_setup_sender_domains            # Configure allowed sender domains
-postfix_setup_masquarading              # Setup masquaraded domains
+postfix_setup_masquarading              # Setup masqueraded domains
 postfix_setup_header_checks             # Enable SMTP header checks, if defined
 postfix_setup_dkim                      # Configure DKIM, if enabled
 postfix_setup_smtpd_sasl_auth           # Enable sender SASL auth, if defined

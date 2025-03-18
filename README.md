@@ -19,6 +19,7 @@ Feel free to pick your favourite distro.
     - [General options](#general-options)
       - [Inbound debugging](#inbound-debugging)
       - [`ALLOWED_SENDER_DOMAINS` and `ALLOW_EMPTY_SENDER_DOMAINS`](#allowed_sender_domains-and-allow_empty_sender_domains)
+      - [`AUTOSET_HOSTNAME` and `AUTOSET_HOSTNAME_SERVICES`](#autoset_hostname-and-autoset_hostname_services)
       - [Log format](#log-format)
     - [Postfix-specific options](#postfix-specific-options)
       - [`RELAYHOST`, `RELAYHOST_USERNAME` and `RELAYHOST_PASSWORD`](#relayhost-relayhost_username-and-relayhost_password)
@@ -167,6 +168,7 @@ Available for all your favourite architectures. Run in your server cluster. Run 
 * `INBOUND_DEBUGGING` = Set to `1` to enable detailed debugging in the logs
 * `ALLOWED_SENDER_DOMAINS` = domains which are allowed to send email via this server
 * `ALLOW_EMPTY_SENDER_DOMAINS` = if value is set (i.e: `true`), `ALLOWED_SENDER_DOMAINS` can be unset
+* `AUTOSET_HOSTNAME` and `AUTOSET_HOSTNAME_SERVICES` - use to automatically resolve hostname
 * `LOG_FORMAT` = Set your log format (JSON or plain)
 
 #### Inbound debugging
@@ -189,6 +191,26 @@ docker run --rm --name postfix -e "ALLOWED_SENDER_DOMAINS=example.com example.or
 If you want to set the restrictions on the recipient and not on the sender (anyone can send mails but just to a single domain
 for instance), set `ALLOW_EMPTY_SENDER_DOMAINS` to a non-empty value (e.g. `true`) and `ALLOWED_SENDER_DOMAINS` to an empty
 string. Then extend this image through custom scripts to configure Postfix further.
+
+#### `AUTOSET_HOSTNAME` and `AUTOSET_HOSTNAME_SERVICES`
+
+This image can automatically set  postfix variable `myhostname` based on reverse DNS resolution of your public IP. To use this
+feature, set `AUTOSET_HOSTNAME` to `1`. The image will then:
+
+- use an external service to get the public IP address of the image
+- do a reverse DNS lookup to get the hostname associated with that IP
+
+The image will, by default, try to get the public IP from any of these services, which will be queried in the order defined below:
+
+1. https://ipinfo.io/ip
+2. https://ifconfig.me/ip
+3. https://icanhazip.com
+4. https://ipecho.net/plain
+5. https://ifconfig.co
+6. https://myexternalip.com/raw
+
+The first service to return a non-empty, non-error response will be deemed successful. If you have a preference of another order
+and/or wish to use a different service, you can do that by setting the bash array `AUTOSET_HOSTNAME_SERVICES`.
 
 #### Log format
 
