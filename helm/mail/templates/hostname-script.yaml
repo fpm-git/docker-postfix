@@ -19,4 +19,5 @@ data:
     # Remove the trailing dot
     DNS=${DNS%.}
     postconf -e "myhostname=${DNS}"
+    postconf -e "mydestination=localhost ${HOSTNAME}.{{ .Release.Namespace }} ${DNS}"
 {{- end }}
