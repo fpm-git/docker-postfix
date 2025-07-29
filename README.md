@@ -640,7 +640,8 @@ Chart configuration is as follows:
 | `nodeSelector` | `{}` | Standard Kubernetes stuff |
 | `tolerations` | `[]` | Standard Kubernetes stuff |
 | `affinity` | `{}` | Standard Kubernetes stuff |
-| `certs.create` | `{}` | Auto generate TLS certificates for Postfix |
+| `certs.create` | `false` | Auto generate TLS certificates for Postfix |
+| `certs.existingSecret` | `""` | Existing secret containing the TLS certificates for Postfix |
 | `extraVolumes` | `[]` | Append any extra volumes to the pod |
 | `extraVolumeMounts` | `[]` | Append any extra volume mounts to the postfix container |
 | `extraInitContainers` | `[]` | Execute any extra init containers on startup |

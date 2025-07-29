@@ -117,7 +117,7 @@ spec:
               subPath: logrotate.sh
             {{- end }}
             {{- end }}
-            {{- if .Values.certs.create }}
+            {{- if or .Values.certs.create .Values.certs.existingSecret }}
             - name: certs
               mountPath: /var/run/certs
               readOnly: true
@@ -189,14 +189,14 @@ spec:
       volumes:
         - name: tmp
           emptyDir: {}
-        {{- if .Values.certs.create }}
+        {{- if or .Values.certs.create .Values.certs.existingSecret }}
         - name: certs-init
           configMap:
             name: {{ $fullName }}
             defaultMode: 0755
         - name: certs
           secret:
-            secretName: {{ $fullName }}-certs
+            secretName: {{ include "tls.secretName" . }}
         {{- end }}
         # Socket directories
         {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
