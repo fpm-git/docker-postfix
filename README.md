@@ -13,9 +13,9 @@ Feel free to pick your favourite distro.
   - [TL;DR](#tldr)
   - [Updates](#updates)
     - [v4.0.0](#v400)
-    - [v3.0.0](#v300)v
+    - [v3.0.0](#v300)
   - [Architectures](#architectures)
-  - [Configuration options](#configuration-options)k
+  - [Configuration options](#configuration-options)
     - [General options](#general-options)
       - [Inbound debugging](#inbound-debugging)
       - [`ALLOWED_SENDER_DOMAINS` and `ALLOW_EMPTY_SENDER_DOMAINS`](#allowed_sender_domains-and-allow_empty_sender_domains)
