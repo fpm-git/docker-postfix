@@ -35,6 +35,29 @@ setup_timezone() {
 }
 
 check_environment_sane() (
+	local permissions
+
+	if [[ ! -d /var/log ]]; then
+		error "/var/log directory does not exist. Ensure that you have proper mounts in your container / pod"
+	fi
+
+	permissions="$(stat /var/log/ | grep Access | grep -i "Uid:" | cut -d: -f2- | cut -d\( -f2- | cut -d/ -f1)"
+
+	if [[ "$permissions" =~ 777$ ]]; then
+		# Fix for #249
+		if [[ "$K8S_STATEFULSET_PERSISTENCE_ENABLED" == "false" ]]; then
+			# When kubernetes mounts an `emptyDir`, it is by default mounted as
+			# 777. Apparently, this is not something that logrotate likes. To fix
+			# this issue, we just change the permission of the folder to a bit
+			# more restrictive.
+			notice "Running from ${emphasis}emptyDir${reset} on Kubernetes. Fixing permissions for ${emphasis}/var/log${reset} to ${emphasis}755${reset}"
+			# Fix /var/log permissions when using emptyDir (persistence disabled)
+			chmod 755 /var/log
+		else
+			warn "Too broad permissions (${emphasis}777${reset}) for ${emphasis}/var/log${reset}. ${emphasis}logrotate${reset} will likely complain."
+		fi
+	fi
+
 	if touch /tmp/test; then
 		debug "/tmp writable."
 		rm /tmp/test
