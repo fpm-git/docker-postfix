@@ -12,7 +12,7 @@ services:
       retries: 2
     volumes:
       - "./test-keys:/etc/opendkim/keys"
-      - "./docker-init.db:/docker-init.db/"
+      - "./docker-init.d:/docker-init.d/"
     environment:
       FORCE_COLOR: "1"
       ALLOWED_SENDER_DOMAINS: "example.org"

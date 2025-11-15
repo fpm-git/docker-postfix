@@ -685,7 +685,7 @@ Prometheus.
 ### Using custom init scripts
 
 If you need to add custom configuration to postfix or have it do something outside of the scope of this configuration,
-simply add your scripts to `/docker-init.db/`: All files with the `.sh` extension will be executed automatically at the
+simply add your scripts to `/docker-init.d/`: All files with the `.sh` extension will be executed automatically at the
 end of the startup script.
 
 E.g.: create a custom `Dockerfile` like this:
@@ -693,7 +693,7 @@ E.g.: create a custom `Dockerfile` like this:
 ```shell script
 FROM boky/postfix
 LABEL maintainer="Jack Sparrow <jack.sparrow@theblackpearl.example.com>"
-ADD Dockerfiles/additional-config.sh /docker-init.db/
+ADD Dockerfiles/additional-config.sh /docker-init.d/
 ```
 
 Build it with docker, and your script will be automatically executed before Postfix starts.

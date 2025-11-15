@@ -127,7 +127,7 @@ spec:
               mountPath: /var/run/certs
               readOnly: true
             - name: certs-init
-              mountPath: /docker-init.db/_enable_tls.sh
+              mountPath: /docker-init.d/_enable_tls.sh
               readOnly: true
               subPath: _enable_tls.sh
             {{- end }}
