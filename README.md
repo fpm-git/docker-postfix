@@ -5,6 +5,10 @@
 Simple postfix relay host ("postfix null client") for your Docker containers. Based on Debian (default), Ubuntu and Alpine Linux. 
 Feel free to pick your favourite distro.
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=bokysan/docker-postfix&type=date&legend=top-left)](https://www.star-history.com/#bokysan/docker-postfix&type=date&legend=top-left)
+
 ## Table of contents
 
 - [docker-postfix](#docker-postfix)
