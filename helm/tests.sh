@@ -16,6 +16,15 @@ SCRIPT_DIR="$( pwd; )/$( dirname -- $0; )"
 cd "${SCRIPT_DIR}"
 FIND="find"
 
+if command -v docker >/dev/null 2>&1; then
+    DOCKER="docker"
+elif command -v podman >/dev/null 2>&1; then
+    DOCKER="podman"
+else
+    echo "Neither `docker` or `podman` installed. Cannot execute tests."
+    exit 1
+fi
+
 mkdir -p fixtures
 # Brew installs GNU find as "gfind" by default
 if command -v gfind >/dev/null 2>&2; then
@@ -26,10 +35,10 @@ do_the_test() {
     local i="${1}" v
     printf '%s' "${gray}☆☆☆☆☆☆☆☆☆☆${reset} ${orange_emphasis}$i${reset}: ${gray}☆☆☆☆☆☆☆☆☆☆${reset}"
     echo
-    for v in 1.22.9 1.29.4; do
+    for v in 1.22.9 1.29.4 1.32.10 1.33.6 1.34.2; do
         printf '%s' "${emphasis}${lightblue}k8s v${v}${reset}${lightblue}... ${reset}"
-        helm template -f "${i}" --kube-version "${v}" --dry-run mail > fixtures/demo.yaml
-        docker run \
+        helm template -f "${i}" --kube-version "${v}" --dry-run=client mail > fixtures/demo.yaml
+        ${DOCKER} run \
             -v "${SCRIPT_DIR}/fixtures:/fixtures" \
             -v "${SCRIPT_DIR}/schemas:/schemas" \
             ghcr.io/yannh/kubeconform:latest-alpine \
