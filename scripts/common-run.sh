@@ -791,8 +791,27 @@ postfix_open_submission_port() {
 
 execute_post_init_scripts() {
 	if [ -d /docker-init.db/ ]; then
-		notice "Executing any found custom scripts..."
+		notice "Executing any found custom scripts found in ${emphasis}/docker-init.db/${reset}..."
+		warn "${emphasis}/docker-init.db/${reset} is deprecated. Please move your scripts (mount them) to ${emphasis}/docker-init.d/${reset} (See https://github.com/bokysan/docker-postfix/issues/236)"
 		for f in /docker-init.db/*; do
+			case "$f" in
+				*.sh)
+					if [[ -x "$f" ]]; then
+						echo -e "\tsourcing ${emphasis}$f${reset}"
+						. "$f"
+					else
+						echo -e "\trunning ${emphasis}bash $f${reset}"
+						bash "$f"
+					fi
+					;;
+				*)
+					echo "$0: ignoring $f" ;;
+			esac
+		done
+	fi
+	if [ -d /docker-init.d/ ]; then
+		notice "Executing any found custom scripts found in ${emphasis}/docker-init.d/${reset}..."
+		for f in /docker-init.d/*; do
 			case "$f" in
 				*.sh)
 					if [[ -x "$f" ]]; then
