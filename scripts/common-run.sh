@@ -55,9 +55,17 @@ rsyslog_log_format() {
 }
 
 logrotate_remove_duplicate_mail_log() {
-	if egrep -q '^/var/log/mail.log' /etc/logrotate.d/logrotate.conf; then
-		info "Removing /var/log/mail.log from /etc/logrotate.d/rsyslog"
-		sed -i -E '/^\/var\/log\/mail.log/d' /etc/logrotate.d/rsyslog
+	# /etc/logrotate.d/logrotate.conf does not exist on a default install of Alpine
+	if [[ -f /etc/logrotate.d/logrotate.conf ]]; then
+		if egrep -q '^/var/log/mail.log' /etc/logrotate.d/logrotate.conf; then
+			info "Removing /var/log/mail.log from /etc/logrotate.d/logrotate.conf"
+			sed -i -E '/^\/var\/log\/mail.log/d' /etc/logrotate.d/logrotate.conf
+		fi
+	elif [[ -f /etc/logrotate.d/rsyslog ]]; then
+		if egrep -q '^/var/log/mail.log' /etc/logrotate.d/rsyslog; then
+			info "Removing /var/log/mail.log from /etc/logrotate.d/rsyslog"
+			sed -i -E '/^\/var\/log\/mail.log/d' /etc/logrotate.d/rsyslog
+		fi
 	fi
 }
 
