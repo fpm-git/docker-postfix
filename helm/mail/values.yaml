@@ -253,3 +253,5 @@ startupProbe:
 
 lifecycle:
   postStart: {}
+
+preStopSleepSeconds: 0
