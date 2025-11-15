@@ -668,6 +668,7 @@ Chart configuration is as follows:
 | `persistence.storageClass` | `""` | Storage class |
 | `recreateOnRedeploy` | `true` | Restart Pods on every helm deployment, to prevent issues with stale configuration(s). |
 | `preStopSleepSeconds` | `0` | Wait for all existing connections to terminate before shutting the container down. See #245 for mode details. |
+| `terminationGracePeriodSeconds` | `120` | Override the timeout for the pod to shutdown |
 
 ### Metrics
 

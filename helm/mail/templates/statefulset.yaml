@@ -57,7 +57,7 @@ spec:
       {{- end }}
 
       # Allow up to 2 minutes for Postfix to flush / empty the queue  before shutting down the container
-      terminationGracePeriodSeconds: 120
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"

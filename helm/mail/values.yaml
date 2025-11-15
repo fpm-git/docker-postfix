@@ -255,3 +255,6 @@ lifecycle:
   postStart: {}
 
 preStopSleepSeconds: 0
+
+# Allow up to 2 minutes for Postfix to flush / empty the queue  before shutting down the container
+terminationGracePeriodSeconds: 120
