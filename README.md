@@ -125,7 +125,8 @@ by ISPs, already occupied by other services, and in general should only be used 
 ### v5.0.0
 
 Image has been updated to [Debian Trixie](https://www.debian.org/releases/trixie/) and with that `linux/mips64le` is gone. To prevent
-failures during upgrade, major version has been bumped.
+failures during upgrade, major version has been bumped. New versions of go do not provide images for `linux/arm/v5` either, so building
+of `postfix-exporter` for this platform is gone as well.
 
 Several other fixes went into this release as well.
 
