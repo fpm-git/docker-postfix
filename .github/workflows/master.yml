@@ -138,7 +138,7 @@ jobs:
       - name: Run Snyk container test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk container test --docker boky/postfix:edge-alpine
+        run: snyk container test --docker boky/postfix:edge-alpine --file=./Dockerfile
 
   Build_Ubuntu:
     runs-on: ubuntu-latest
@@ -219,7 +219,7 @@ jobs:
       - name: Run Snyk container test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk container test --docker boky/postfix:edge-ubuntu
+        run: snyk container test --docker boky/postfix:edge-ubuntu --file=./Dockerfile
 
   Build_Debian:
     runs-on: ubuntu-latest
@@ -271,7 +271,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache/debian,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/debian
           build-args: |
-            BASE_IMAGE=debian:bookworm-slim
+            BASE_IMAGE=debian:trixie-slim
 
       - name: Move cache
         run: |
@@ -302,4 +302,4 @@ jobs:
       - name: Run Snyk container test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk container test --docker boky/postfix:edge-debian
+        run: snyk container test --docker boky/postfix:edge-debian --file=./Dockerfile
