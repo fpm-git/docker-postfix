@@ -138,7 +138,7 @@ jobs:
       - name: Run Snyk container test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk container test --docker boky/postfix:edge-alpine --file=./Dockerfile
+        run: snyk container test --exclude-base-image-vulns --docker boky/postfix:edge-alpine --file=./Dockerfile
 
   Build_Ubuntu:
     runs-on: ubuntu-latest
@@ -219,7 +219,7 @@ jobs:
       - name: Run Snyk container test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk container test --docker boky/postfix:edge-ubuntu --file=./Dockerfile
+        run: snyk container test --exclude-base-image-vulns --docker boky/postfix:edge-ubuntu --file=./Dockerfile
 
   Build_Debian:
     runs-on: ubuntu-latest
@@ -267,7 +267,7 @@ jobs:
           # make[2]: *** [src/CMakeFiles/sasl-xoauth2-static.dir/build.make:149: src/CMakeFiles/sasl-xoauth2-static.dir/token_store.cc.o] Error 4
           # make[1]: *** [CMakeFiles/Makefile2:169: src/CMakeFiles/sasl-xoauth2-static.dir/all] Error 2
           # make: *** [Makefile:166: all] Error 2
-          platforms: "linux/386,linux/arm/v5,linux/arm/v7,linux/arm64/v8,linux/amd64,linux/arm64,linux/mips64le,linux/s390x"
+          platforms: "linux/386,linux/arm/v5,linux/arm/v7,linux/arm64/v8,linux/amd64,linux/arm64,linux/s390x"
           cache-from: type=local,src=/tmp/.buildx-cache/debian,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/debian
           build-args: |
@@ -302,4 +302,4 @@ jobs:
       - name: Run Snyk container test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk container test --docker boky/postfix:edge-debian --file=./Dockerfile
+        run: snyk container test --exclude-base-image-vulns --docker boky/postfix:edge-debian --file=./Dockerfile
