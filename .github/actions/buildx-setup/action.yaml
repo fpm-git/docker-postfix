@@ -13,5 +13,11 @@ runs:
       with:
         install: true
 
+    # Install dependencies for QEMU and ARM
+    - name: Install QEMU and ARM libraries
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y qemu-user-static libc6-armhf
+
     # Release version setup
     - uses: ./.github/actions/get-release-version
