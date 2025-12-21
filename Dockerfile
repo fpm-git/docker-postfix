@@ -29,7 +29,6 @@ RUN        --mount=type=cache,target=/var/cache/apt,sharing=locked,id=var-cache-
 
 # ============================ BUILD SASL XOAUTH2 ============================
 FROM base AS sasl
-
 ARG TARGETPLATFORM
 
 ARG SASL_XOAUTH2_REPO_URL=https://github.com/tarickb/sasl-xoauth2.git

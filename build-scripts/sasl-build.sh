@@ -39,19 +39,37 @@ set -e
 # LOGO=ubuntu-logo
 
 export DEBIAN_FRONTEND=noninteractive
-export arch="$(uname -m)"
+export arch
 export skip_msal=""
 
-if [[ "${arch}" =~ i?386 ]] || [[ "${arch}" == "mips64el" ]]; then
+arch="${TARGETARCH:-$(dpkg --print-architecture 2>/dev/null || uname -m)}"
+
+cat <<- EOF
+	************************************************************
+	*
+	*  INFO: Building sasl2 with sasl-xoauth2 plugin on ${ID} ${VERSION:-$VERSION_ID} (${arch})
+	*        ${PRETTY_NAME:-$NAME}
+	*
+	************************************************************
+EOF
+
+
+if [[ ${arch} =~ i?386 ]] || [[ "${arch}" == "mips64el" ]]; then
 	skip_msal="1"
-	echo "Running on ${ID}/${arch}: Skipping msal install: ${skip_msal}"
-else
-	echo "Running on ${ID}/${arch}: Installing msal"
+	cat <<- EOF
+		************************************************************
+		*
+		*  WARNING: The msal library will NOT be installed!
+		*           This may cause issues with XOAUTH2
+		*           authentication in sasl-xoauth2-tool.
+		*
+		************************************************************
+	EOF
 fi
 
 # Build the sasl2 library with the sasl-xoauth2 plugin.
 #
-# The sasl-xoauth2 plugin is a SASL plugin that provides support for XOAUTH2 (OAuth 2.0) authentication.
+# The sasl-xoauth2 plugin is a SASL plugin that provides support for XOAUTH2 (OAuth 2.0) authenttion.
 #
 # The build is done in /sasl-xoauth2/build.
 #
@@ -149,7 +167,7 @@ if [ -f /etc/alpine-release ]; then
 	apk del .build-deps;
 else
 	# Install necessary libraries
-	LIBS="git build-essential cmake pkg-config libcurl4-openssl-dev libssl-dev libjsoncpp-dev libsasl2-dev python3-dev python3-venv"
+	LIBS="git build-essential cmake pkg-config libcurl4-openssl-dev libssl-dev libjsoncpp-dev libsasl2-dev python3-dev python3-venv libffi-dev"
 	apt-get update -y -qq
 	apt-get install -y --no-install-recommends ${LIBS}
 
