@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 load /code/scripts/common.sh
-load /code/scripts/common-run.sh
+load /code/scripts/functions.sh
 
 declare temporary_file
 setup() {

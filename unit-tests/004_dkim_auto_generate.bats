@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 load /code/scripts/common.sh
-load /code/scripts/common-run.sh
+load /code/scripts/functions.sh
 
 mkdir -p /etc/opendkim
 cp /code/configs/opendkim.conf /etc/opendkim/opendkim.conf

@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 load /code/scripts/common.sh
-load /code/scripts/common-run.sh
+load /code/scripts/functions.sh
 
 @test "check if filter gets injected into rsyslog" {
 	mkdir -p /etc/

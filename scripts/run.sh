@@ -3,7 +3,7 @@ set -e
 
 chmod +x /scripts/*.sh
 . /scripts/common.sh
-. /scripts/common-run.sh
+. /scripts/functions.sh
 
 announce_startup                        # Print startup banner
 setup_timezone                          # Check if we need to configure the container timezone

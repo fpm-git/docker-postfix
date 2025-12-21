@@ -42,9 +42,7 @@ export DEBIAN_FRONTEND=noninteractive
 export arch="$(uname -m)"
 export skip_msal=""
 
-if ([[ "${ID:-}" == "alpine" ]] \
-        && ( [[ "${arch}" == "386" ]] || [[ "${arch}" == "i386" ]] ) ) \
-    || [[ "${arch}" == "mips64el" ]]; then
+if ( [[ "${ID:-}" == "alpine" ]] && [[ "${arch}" =~ i?386 ]] ) || [[ "${arch}" == "mips64el" ]]; then
 	skip_msal="1"
 	echo "Running on ${ID}/${arch}: Skipping msal install: ${skip_msal}"
 else
@@ -99,11 +97,13 @@ build_sasl2() {
 	update-ca-certificates
 }
 
-# Installs rust. Debian bookwork comes with an old version of rust, so we can't use the one from the repository.
-# Rust is needed, though for installation of msal library. On some architectures, we cannot use pre-compiled packages
-# (because they don't exist in the PIP repositories) and "pip install" will fail without rust. Specifically, when
-# compiling cryptographic libraries.
+# setup_rust installs rust. Debian bookwork comes with an old version of rust, so we can't use the one from the repository.
+# Rust is needed, though, for installation of msal library. On some architectures, we cannot use pre-compiled packages
+# (because they don't exist in the PIP repositories) and "pip install" will fail without rust. Specifically, this happens
+# when PIP is compiling cryptographic libraries.
 setup_rust() {
+	# On some exotic architectures it's impossible to install rust properly. In these cases, we skipp installation
+	# completely.
 	if [[ -z "${skip_msal}" ]]; then
 		curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh -s -- -y --profile minimal
 		export PATH="$HOME/.cargo/bin:$PATH"
@@ -111,14 +111,14 @@ setup_rust() {
 	fi
 }
 
+# teradown_rust removes rust completely, as it's not needed in the image for regular work
 teardown_rust() {
 	if command -v rustup 2>&1 > /dev/null; then
 		rustup self uninstall -y
 	fi
 }
 
-# Create a virtual environment and install the msal library for the
-# sasl-xoauth2-tool.
+# setup_python_venv creates a virtual environment and install the msal library for the sasl-xoauth2-tool.
 setup_python_venv() {
 	python3 -m venv /sasl
 	. /sasl/bin/activate
@@ -127,32 +127,30 @@ setup_python_venv() {
 	fi
 }
 
-# Installs the base components into the docker image:
-#
-# 1. sasl2 using the sasl-xoauth2 plugin
-# 2. a python virtual environment with the msal library
+# base_install installs the base components into the docker image. Specifically:
+#  1. sasl2 using the sasl-xoauth2 plugin
+#  2. a python virtual environment with the msal library
 base_install() {
 	build_sasl2
 	setup_python_venv
 }
 
-# Determine the base installation method based on the OS.
-# Alpine Linux has a different package management system than Debian-based systems.
+# Determine the base installation method based on the OS. Alpine Linux has a different package management system than Debian-based systems.
 if [ -f /etc/alpine-release ]; then
 	# Install necessary libraries
 	LIBS="git cmake clang make gcc g++ libc-dev pkgconfig curl-dev jsoncpp-dev cyrus-sasl-dev patch libffi-dev python3-dev rust cargo"
 	apk add --upgrade curl
 	apk add --upgrade --virtual .build-deps ${LIBS}
 
-	# Run compilation and installation
+	# Run compilation and installation. For Alpine, we'll just install rust from the repository
 	base_install
 
 	# Cleanup. This is important to ensure that we don't keep unnecessary files laying around and thus increasing the size of the image.
 	apk del .build-deps;
 else
 	# Install necessary libraries
-	apt-get update -y -qq
 	LIBS="git build-essential cmake pkg-config libcurl4-openssl-dev libssl-dev libjsoncpp-dev libsasl2-dev python3-dev python3-venv"
+	apt-get update -y -qq
 	apt-get install -y --no-install-recommends ${LIBS}
 
 	# Run compilation and installation
