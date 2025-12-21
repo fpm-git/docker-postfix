@@ -132,7 +132,9 @@ setup_rust() {
 # teradown_rust removes rust completely, as it's not needed in the image for regular work
 teardown_rust() {
 	if command -v rustup 2>&1 > /dev/null; then
-		rustup self uninstall -y
+		# Fails on Ubuntu linux/arm/v7
+		# with could not remove 'rustup_home' directory: '/root/.rustup': Value too large for defined data type (os error 75)
+		rustup self uninstall -y || rm -rf /root/.rustup
 	fi
 }
 
