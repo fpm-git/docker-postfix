@@ -42,7 +42,7 @@ export DEBIAN_FRONTEND=noninteractive
 export arch="$(uname -m)"
 export skip_msal=""
 
-if ( [[ "${ID:-}" == "alpine" ]] && [[ "${arch}" =~ i?386 ]] ) || [[ "${arch}" == "mips64el" ]]; then
+if [[ "${arch}" =~ i?386 ]] || [[ "${arch}" == "mips64el" ]]; then
 	skip_msal="1"
 	echo "Running on ${ID}/${arch}: Skipping msal install: ${skip_msal}"
 else
