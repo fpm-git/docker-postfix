@@ -253,7 +253,7 @@ jobs:
             boky/postfix:${{ env.RELEASE_VERSION_NO_v }}
             boky/postfix:${{ env.RELEASE_VERSION }}-debian
             boky/postfix:${{ env.RELEASE_VERSION_NO_v }}-debian
-          platforms: "linux/386,linux/arm/v5,linux/arm/v7,linux/arm64/v8,linux/amd64,linux/arm64,linux/ppc64le,linux/s390x"
+          platforms: "linux/386,linux/arm/v7,linux/arm64/v8,linux/amd64,linux/arm64,linux/ppc64le,linux/s390x"
           cache-from: type=local,src=/tmp/.buildx-cache/debian,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/debian
           build-args: |

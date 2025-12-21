@@ -290,7 +290,7 @@ jobs:
           #   Caused by: Cargo build finished with "exit status: 101": `env -u CARGO PYO3_BUILD_EXTENSION_MODULE="1" PYO3_ENVIRONMENT_SIGNATURE="cpython-3.13-64bit" PYO3_PYTHON="/sasl/bin/python3" PYTHON_SYS_EXECUTABLE="/sasl/bin/python3" "cargo" "rustc" "--profile" "release" "--message-format" "json-render-diagnostics" "--locked" "--manifest-path" "/tmp/pip-install-bpvyezx3/cryptography_9e845f0e69e14411a204415c1ca278ca/src/rust/Cargo.toml" "--lib"`
           # Error: command ['maturin', 'pep517', 'build-wheel', '-i', '/sasl/bin/python3', '--compatibility', 'off'] returned non-zero exit status 1
           # [end of output]
-          platforms: "linux/386,linux/arm/v5,linux/arm/v7,linux/arm64/v8,linux/amd64,linux/arm64,linux/s390x"
+          platforms: "linux/386,linux/arm/v7,linux/arm64/v8,linux/amd64,linux/arm64,linux/s390x"
           cache-from: type=local,src=/tmp/.buildx-cache/debian,mode=max,compression=estargz
           cache-to: type=local,dest=/tmp/.buildx-cache-new/debian
           build-args: |
