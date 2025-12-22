@@ -121,6 +121,9 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Get version number from tag
+        uses: ./.github/actions/get-release-version
+
       - name: Install Snyk CLI
         run: npm install -g snyk
 
@@ -196,6 +199,9 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '18'
+
+      - name: Get version number from tag
+        uses: ./.github/actions/get-release-version
 
       - name: Install Snyk CLI
         run: npm install -g snyk
@@ -276,6 +282,9 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '18'
+
+      - name: Get version number from tag
+        uses: ./.github/actions/get-release-version
 
       - name: Install Snyk CLI
         run: npm install -g snyk
