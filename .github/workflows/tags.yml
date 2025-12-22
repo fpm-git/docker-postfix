@@ -135,7 +135,7 @@ jobs:
       - name: Run Snyk container test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk container test --exclude-base-image-vulns --file=./Dockerfile --docker boky/postfix:${{ env.RELEASE_VERSION }}-alpine
+        run: snyk container test --severity-threshold=high --file=./Dockerfile --docker boky/postfix:${{ env.RELEASE_VERSION }}-alpine
 
   Build_Ubuntu:
     runs-on: ubuntu-latest
@@ -214,7 +214,7 @@ jobs:
       - name: Run Snyk container test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk container test --exclude-base-image-vulns --file=./Dockerfile --docker boky/postfix:${{ env.RELEASE_VERSION }}-ubuntu
+        run: snyk container test --severity-threshold=high --file=./Dockerfile --docker boky/postfix:${{ env.RELEASE_VERSION }}-ubuntu
 
 
   Build_Debian:
@@ -297,7 +297,7 @@ jobs:
       - name: Run Snyk container test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk container test --exclude-base-image-vulns --file=./Dockerfile --docker boky/postfix:${{ env.RELEASE_VERSION }}-debian
+        run: snyk container test --severity-threshold=high --file=./Dockerfile --docker boky/postfix:${{ env.RELEASE_VERSION }}-debian
 
 
   Release:
