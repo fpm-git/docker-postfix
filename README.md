@@ -16,7 +16,7 @@ Feel free to pick your favourite distro.
   - [Description](#description)
   - [TL;DR](#tldr)
   - [Updates](#updates)
-    - [vv.0.0](#v500)
+    - [v5.0.0](#v500)
     - [v4.0.0](#v400)
     - [v3.0.0](#v300)
   - [Architectures](#architectures)
