@@ -11,9 +11,16 @@ if command -v gfind > /dev/null 2>&1; then
     FIND="$(which gfind)"
 fi
 
-DOCKER_COMPOSE="docker-compose"
-if docker --help | grep -q -F 'compose*'; then
-    DOCKER_COMPOSE="docker compose"
+if command -v docker >/dev/null 2>&1; then
+    DOCKER_COMPOSE="docker-compose"
+    if docker --help | grep -q -F 'compose*'; then
+        DOCKER_COMPOSE="docker compose"
+    fi
+elif command -v podman >/dev/null 2>&1; then
+    DOCKER_COMPOSE="podman compose"
+else
+    echo "Neither `docker` or `podman` installed. Cannot execute tests."
+    exit 1
 fi
 
 run_test() {

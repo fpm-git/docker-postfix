@@ -125,7 +125,7 @@ services:
       - ./postfix/sasl_password:/etc/postfix/sasl_password # List of passwords for upstream MTAs
       - ./postfix/sender_dependent_relayhost:/etc/postfix/sender_dependent_relayhost # List of domains for upstream MTAs
       - ./postfix/smtp_tls_policy:/etc/postfix/smtp_tls_policy # Different upstreams MTAs have different encryption connection policy
-      - ./postfix/init:/docker-init.db # Run 3rd-party init scripts at startup
+      - ./postfix/init:/docker-init.d # Run 3rd-party init scripts at startup
       - ./dovecot/run:/var/run/dovecot # Map Dovecot run directory
       - ./dovecot/auth:/var/spool/postfix/private/dovecot # Map Dovecot auth socket
       - ./certs:/etc/letsencrypt # Inject certificates

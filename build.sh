@@ -15,32 +15,45 @@ if [[ "$CI" == "true" ]]; then
     fi
 fi
 
-cache_from="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )/cache"
-cache_to="${cache_from}"
-
-if ! docker buildx inspect multiarch > /dev/null; then
-    docker buildx create --name multiarch
+if command -v docker >/dev/null 2>&1; then
+    DOCKER="docker"
+elif command -v podman >/dev/null 2>&1; then
+    DOCKER="podman"
+else
+    echo "Neither `docker` or `podman` installed. Cannot execute tests."
+    exit 1
 fi
-docker buildx use multiarch
+
+
+if ! ${DOCKER} buildx inspect multiarch > /dev/null; then
+    ${DOCKER} buildx create --name multiarch
+fi
+
+if [[ "${DOCKER}" == "docker" ]]; then
+    cache_from="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )/cache"
+    cache_to="${cache_from}"
+    ${DOCKER} buildx use multiarch
+fi
 
 if [[ "$*" == *--push* ]]; then
     if [[ -n "$DOCKER_USERNAME" ]] && [[ -n "$DOCKER_PASSWORD" ]]; then
         echo "Logging into docker registry $DOCKER_REGISTRY_URL...."
-        echo "$DOCKER_PASSWORD" | docker login --username $DOCKER_USERNAME --password-stdin $DOCKER_REGISTRY_URL
+        echo "$DOCKER_PASSWORD" | ${DOCKER} login --username $DOCKER_USERNAME --password-stdin $DOCKER_REGISTRY_URL
     fi
 fi
 
-arg_list=" --cache-to type=local,dest=${cache_to}"
-if [[ -f "${cache_from}/index.json" ]]; then
-    arg_list="$arg_list --cache-from type=local,src=${cache_from}"
-else
-    mkdir -p "${cache_from}"
+if [[ -n "${cache_to}" ]]; then
+    arg_list=" --cache-to type=local,dest=${cache_to}"
 fi
 
-#if [[ -z "$PLATFORMS" ]]; then
-#    arg_list="$arg_list --platform linux/amd64,linux/arm64,linux/arm/v7"
-#fi
+if [[ -n "${cache_from}" ]]; then
+    if [[ -f "${cache_from}/index.json" ]]; then
+        arg_list="$arg_list --cache-from type=local,src=${cache_from}"
+    else
+        mkdir -p "${cache_from}"
+    fi
+fi
 
 set -x
-exec docker buildx build ${arg_list} $* .
+exec ${DOCKER} buildx build ${arg_list} $* .
 

@@ -5,6 +5,10 @@
 Simple postfix relay host ("postfix null client") for your Docker containers. Based on Debian (default), Ubuntu and Alpine Linux. 
 Feel free to pick your favourite distro.
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=bokysan/docker-postfix&type=date&legend=top-left)](https://www.star-history.com/#bokysan/docker-postfix&type=date&legend=top-left)
+
 ## Table of contents
 
 - [docker-postfix](#docker-postfix)
@@ -12,6 +16,7 @@ Feel free to pick your favourite distro.
   - [Description](#description)
   - [TL;DR](#tldr)
   - [Updates](#updates)
+    - [v5.0.0](#v500)
     - [v4.0.0](#v400)
     - [v3.0.0](#v300)
   - [Architectures](#architectures)
@@ -118,6 +123,14 @@ by ISPs, already occupied by other services, and in general should only be used 
 
 ## Updates
 
+### v5.0.0
+
+Image has been updated to [Debian Trixie](https://www.debian.org/releases/trixie/) and with that `linux/mips64le` is gone. To prevent
+failures during upgrade, major version has been bumped. New versions of go do not provide images for `linux/arm/v5` and it's not really
+supported that wall on Debian any more, so this architecture is dropped as well.
+
+Several other fixes went into this release as well. Full list is available on the [releases](https://github.com/bokysan/docker-postfix/releases/tag/v5.0.0) page.
+
 ### v4.0.0
 
 Several potentially "surprising" changes went into this issue and hence warrant a version upgrade:
@@ -135,9 +148,8 @@ Several potentially "surprising" changes went into this issue and hence warrant 
 - Image now builds its own version of [postfix-exporter](https://github.com/kumina/postfix_exporter) and relies on this
   third-party project. Checkout is from master branch, based
   on specific SHA commit id. The same hash is used for master and tags.
-- **Architecture galore!** With the addition of debian images, we now support support more architectures than ever. The list includes: 
-  `linux/386`, `linux/amd64`, `linux/arm/v5`, `linux/arm/v6`, `linux/arm/v7`, `linux/arm64`, `linux/arm64/v8`, `linux/mips64le`, 
-  `linux/ppc64le` and `linux/s390x`.
+- **Architecture galore!** With the addition of debian images, we now support support more architectures than ever. The list includes:
+  `linux/386`, `linux/arm/v7`, `linux/arm64/v8`, `linux/amd64`, `linux/arm64`, `linux/s390x`.
 - **`smtpd_tls_security_level` is now set to `may`**. If you encounter
   issues, try setting it to `none` explicitly (see [#160](https://github.com/bokysan/docker-postfix/issues/160)).
 
@@ -628,6 +640,7 @@ Chart configuration is as follows:
 | `service.spec` | `{}` | Additional service specifications |
 | `service.nodePort` | *empty* | Use a specific `nodePort` |
 | `service.nodeIP` | *empty* | Use a specific `nodeIP` |
+| `service.externalTrafficPolicy` | *empty* | Set `loadbalancer` [External traffic policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip) |
 | `resources` | `{}` | [Pod resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
 | `autoscaling.enabled` | `false` | Set to `true` to enable [Horisontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) |
 | `autoscaling.minReplicas` | `1` | Minimum number of replicas |
@@ -639,7 +652,8 @@ Chart configuration is as follows:
 | `nodeSelector` | `{}` | Standard Kubernetes stuff |
 | `tolerations` | `[]` | Standard Kubernetes stuff |
 | `affinity` | `{}` | Standard Kubernetes stuff |
-| `certs.create` | `{}` | Auto generate TLS certificates for Postfix |
+| `certs.create` | `false` | Auto generate TLS certificates for Postfix |
+| `certs.existingSecret` | `""` | Existing secret containing the TLS certificates for Postfix |
 | `extraVolumes` | `[]` | Append any extra volumes to the pod |
 | `extraVolumeMounts` | `[]` | Append any extra volume mounts to the postfix container |
 | `extraInitContainers` | `[]` | Execute any extra init containers on startup |
@@ -665,6 +679,8 @@ Chart configuration is as follows:
 | `persistence.size` | `1Gi` | Storage size |
 | `persistence.storageClass` | `""` | Storage class |
 | `recreateOnRedeploy` | `true` | Restart Pods on every helm deployment, to prevent issues with stale configuration(s). |
+| `preStopSleepSeconds` | `0` | Wait for all existing connections to terminate before shutting the container down. See #245 for mode details. |
+| `terminationGracePeriodSeconds` | `120` | Override the timeout for the pod to shutdown |
 
 ### Metrics
 
@@ -681,7 +697,7 @@ Prometheus.
 ### Using custom init scripts
 
 If you need to add custom configuration to postfix or have it do something outside of the scope of this configuration,
-simply add your scripts to `/docker-init.db/`: All files with the `.sh` extension will be executed automatically at the
+simply add your scripts to `/docker-init.d/`: All files with the `.sh` extension will be executed automatically at the
 end of the startup script.
 
 E.g.: create a custom `Dockerfile` like this:
@@ -689,7 +705,7 @@ E.g.: create a custom `Dockerfile` like this:
 ```shell script
 FROM boky/postfix
 LABEL maintainer="Jack Sparrow <jack.sparrow@theblackpearl.example.com>"
-ADD Dockerfiles/additional-config.sh /docker-init.db/
+ADD Dockerfiles/additional-config.sh /docker-init.d/
 ```
 
 Build it with docker, and your script will be automatically executed before Postfix starts.

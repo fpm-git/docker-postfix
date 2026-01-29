@@ -19,6 +19,7 @@ service:
   port: 587
   labels: {}
   annotations: {}
+  # externalTrafficPolicy: Cluster
   # nodePort:
 
 # StatefulSets now require a headless service
@@ -64,6 +65,15 @@ metrics:
           maxage 90
       }
 
+  resources: {}
+  # If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
 
 # Tell helm to restart (recreate) pods on every deploy. Setting this to true will inject
 # `date/deploy-date: <timestamp>` annotation into pod specification for StateFulset. This
@@ -75,7 +85,8 @@ metrics:
 # a pod and let `StatefulSet` recreate it.
 recreateOnRedeploy: true
 
-resources: {}
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -111,6 +122,11 @@ deployment:
 
 pod:
   securityContext: {}
+  # Default setup
+  #  capabilities:
+  #    drop:
+  #    - ALL
+  #  readOnlyRootFilesystem: true
   # capabilities:
   #   drop:
   #   - ALL
@@ -123,12 +139,16 @@ pod:
 container:
   postfix:
     securityContext: {}
+    #  capabilities:
+    #    drop:
+    #    - ALL
+    #  readOnlyRootFilesystem: true
 
 certs:
   # Auto-generate certificates for the server and mount them into Postfix volume
   create: false
-  # Provide existing cert
-  existing: false
+  # Provide existing secret name
+  existingSecret: ""
 
 # Define data which should be stored in a Secret
 # (and shared with the pod as environment variables)
@@ -145,7 +165,8 @@ existingSecret: ""
 mountSecret:
   enabled: false
   path: /var/lib/secret
-  data: {}
+  data:
+    {}
     # e.g.
     # dkim-private: |
     #   -----BEGIN RSA PRIVATE KEY-----
@@ -157,7 +178,8 @@ lookupHostName:
   enabled: false
 
 config:
-  general: {}
+  general:
+    {}
     # e.g.
     # TZ:
     # FORCE_COLOR:
@@ -173,26 +195,28 @@ config:
     # SMTP_HEADER_CHECKS:
     # DKIM_SELECTOR:
     # DKIM_AUTOGENERATE:
-  postfix: {}
+  postfix:
+    {}
     # e.g.
     # myhostname: "postfix"
     # smtp_tls_security_level: "encrypt"
-  opendkim: {}
+  opendkim:
+    {}
     # e.g.
     # RequireSafeKeys: "yes"
 
 dns:
   policy: ""
   # policy: "None"
-  nameservers: {}
+  nameservers: []
     # - 8.8.8.8
     # - 8.8.4.4
-  searches: ""
+  searches: []
   # searches:
   # - "default.svc.cluster.local"
   # - "svc.cluster.local"
   # - "cluster.local"
-  options: {}
+  options: []
   # options:
   #  - name: ndots
   #    value: "5"
@@ -241,3 +265,8 @@ startupProbe:
 
 lifecycle:
   postStart: {}
+
+preStopSleepSeconds: 0
+
+# Allow up to 2 minutes for Postfix to flush / empty the queue  before shutting down the container
+terminationGracePeriodSeconds: 120

@@ -13,7 +13,7 @@ extraVolumes:
     configMap:
       name: postfix-mail
 extraVolumeMounts:
-  - mountPath: /docker-init.db/startup.sh
+  - mountPath: /docker-init.d/startup.sh
     subPath: startup.sh
     name: config
 

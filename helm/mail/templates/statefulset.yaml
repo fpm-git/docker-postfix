@@ -7,6 +7,10 @@
 {{- $serviceAccountName := include (print $chart ".serviceAccountName") . -}}
 {{- $kind := "StatefulSet" -}}
 {{- $root := . -}}
+{{- $env := .Values.extraEnv | default (list) }}
+{{- if not .Values.persistence.enabled }}
+{{- $env = concat $env ( list ( dict "name" "K8S_STATEFULSET_PERSISTENCE_ENABLED" "value" "false" ) ) }}
+{{- end }}
 apiVersion: apps/v1
 kind: {{ $kind | quote }}
 metadata:
@@ -57,7 +61,7 @@ spec:
       {{- end }}
 
       # Allow up to 2 minutes for Postfix to flush / empty the queue  before shutting down the container
-      terminationGracePeriodSeconds: 120
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -77,10 +81,11 @@ spec:
                 command:
                   - bash
                   - -c
-                  - touch /tmp/container_is_terminating && while ! [[ "`mailq`" == *empty* ]]; do echo "Flushing queue..." && postfix flush; sleep 1; done; killall5 -15 supervisord
+                  - sleep {{ .Values.preStopSleepSeconds }} && touch /tmp/container_is_terminating && while ! [[ "`mailq`" == *empty* ]]; do echo "Flushing queue..." && postfix flush; sleep 1; done; killall5 -15 supervisord
             {{- if .Values.lifecycle.postStart }}
             postStart: {{- toYaml .Values.lifecycle.postStart | nindent 14 }}
             {{- end }}
+          {{ with $env }}env: {{- toYaml . | nindent 12 }}{{ end }}
           envFrom:
             - configMapRef:
                 name: {{ $fullName | quote }}
@@ -92,7 +97,6 @@ spec:
             - secretRef:
                 name: {{ .Values.existingSecret | quote }}
             {{- end }}
-          {{ with .Values.extraEnv }}env: {{- toYaml . | nindent 12 }}{{ end }}
           volumeMounts:
             - mountPath: /var/spool/postfix
               name: {{ $fullName | quote }}
@@ -117,12 +121,12 @@ spec:
               subPath: logrotate.sh
             {{- end }}
             {{- end }}
-            {{- if .Values.certs.create }}
+            {{- if or .Values.certs.create .Values.certs.existingSecret }}
             - name: certs
               mountPath: /var/run/certs
               readOnly: true
             - name: certs-init
-              mountPath: /docker-init.db/_enable_tls.sh
+              mountPath: /docker-init.d/_enable_tls.sh
               readOnly: true
               subPath: _enable_tls.sh
             {{- end }}
@@ -180,6 +184,7 @@ spec:
             initialDelaySeconds: 5
             failureThreshold: 30
             periodSeconds: 10
+          resources: {{ toYaml .Values.metrics.resources | nindent 12 }}
         {{- end }}
         {{- if .Values.extraContainers }}
         {{- tpl .Values.extraContainers $root | nindent 8 }}
@@ -193,14 +198,14 @@ spec:
       volumes:
         - name: tmp
           emptyDir: {}
-        {{- if .Values.certs.create }}
+        {{- if or .Values.certs.create .Values.certs.existingSecret }}
         - name: certs-init
           configMap:
             name: {{ $fullName }}
             defaultMode: 0755
         - name: certs
           secret:
-            secretName: {{ $fullName }}-certs
+            secretName: {{ include "tls.secretName" . }}
         {{- end }}
         # Socket directories
         {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}

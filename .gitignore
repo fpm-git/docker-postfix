@@ -1,5 +1,6 @@
 .idea
 helm/fixtures/
+helm/schemas/cached/
 public/
 gh-pages/
 .env

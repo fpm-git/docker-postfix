@@ -3,7 +3,7 @@ set -e
 
 chmod +x /scripts/*.sh
 . /scripts/common.sh
-. /scripts/common-run.sh
+. /scripts/functions.sh
 
 announce_startup                        # Print startup banner
 setup_timezone                          # Check if we need to configure the container timezone
@@ -39,7 +39,7 @@ postfix_setup_smtpd_sasl_auth           # Enable sender SASL auth, if defined
 postfix_custom_commands                 # Apply custom postfix settings
 opendkim_custom_commands                # Apply custom OpenDKIM settings
 postfix_open_submission_port            # Enable the submission port
-execute_post_init_scripts               # Execute any scripts found in /docker-init.db/
+execute_post_init_scripts               # Execute any scripts found in /docker-init.d/
 unset_sensitive_variables               # Remove environment variables that contains sensitive values (secrets) that are read from conf files
 
 notice "Starting: ${emphasis}rsyslog${reset}, ${emphasis}crond${reset}, ${emphasis}postfix${reset}$DKIM_ENABLED"
